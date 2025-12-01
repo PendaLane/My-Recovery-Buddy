@@ -8,8 +8,48 @@ import { StepWorkComponent } from './components/StepWork';
 import { Readings } from './components/Readings';
 import { Badges } from './components/Badges';
 import { MeetingFinder } from './components/MeetingFinder';
-import { Phone, AlertCircle, Siren, LogOut, LogIn, Camera, Share2, Award, Flame, Menu, X, Trash2, LayoutDashboard, MapPin, BotMessageSquare, BookHeart, FileText, BookOpen } from 'lucide-react';
+import { Phone, AlertCircle, Siren, LogOut, LogIn, Share2, Award, Flame, Menu, X, Trash2, LayoutDashboard, MapPin, BotMessageSquare, BookHeart, FileText, BookOpen } from 'lucide-react';
 import { getCurrentUser, loadState, saveState, WPState, subscribeToJournals } from './services/backend';
+
+// Contacts View Helper
+const ContactsView = ({ list, setList }: { list: Contact[], setList: any }) => {
+  const [f, setF] = useState({ name: '', phone: '', role: 'Sponsor', fellowship: 'AA' });
+  const save = () => {
+      if(!f.name) return;
+      setList([...list, { ...f, id: Date.now().toString() }]);
+      setF({ name: '', phone: '', role: 'Sponsor', fellowship: 'AA' });
+  };
+  return (
+      <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-penda-purple">Phone Book</h2>
+          <div className="bg-white p-6 rounded-2xl border border-penda-border shadow-sm space-y-3">
+              <div className="flex gap-3">
+                  <input value={f.name} onChange={e=>setF({...f, name:e.target.value})} placeholder="Name" className="flex-1 p-3 border border-penda-border rounded-xl outline-none" />
+                  <input value={f.phone} onChange={e=>setF({...f, phone:e.target.value})} placeholder="Phone" className="w-32 p-3 border border-penda-border rounded-xl outline-none" />
+              </div>
+              <div className="flex gap-3">
+                  <select value={f.role} onChange={e=>setF({...f, role:e.target.value})} className="flex-1 p-3 border border-penda-border rounded-xl bg-white"><option>Sponsor</option><option>Peer</option><option>Therapist</option></select>
+                  <select value={f.fellowship} onChange={e=>setF({...f, fellowship:e.target.value})} className="flex-1 p-3 border border-penda-border rounded-xl bg-white"><option>AA</option><option>NA</option><option>CA</option><option>Other</option></select>
+              </div>
+              <button onClick={save} className="w-full bg-penda-purple text-white py-3 rounded-xl font-bold hover:bg-penda-light">Add Contact</button>
+          </div>
+          <div className="space-y-2">
+              {list.map(c => (
+                  <div key={c.id} className="bg-white p-4 rounded-xl border border-penda-border flex justify-between items-center shadow-sm">
+                      <div>
+                          <div className="font-bold text-penda-text">{c.name}</div>
+                          <div className="text-xs text-gray-500">{c.role} • {c.fellowship}</div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                          <a href={`tel:${c.phone}`} className="bg-penda-bg p-2 rounded-full text-penda-purple hover:bg-penda-purple hover:text-white transition-colors"><Phone size={18}/></a>
+                          <button onClick={()=>setList(list.filter((l: Contact)=>l.id!==c.id))} className="text-gray-300 hover:text-red-500"><Trash2 size={18}/></button>
+                      </div>
+                  </div>
+              ))}
+          </div>
+      </div>
+  );
+};
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>(View.DASHBOARD);
@@ -42,6 +82,7 @@ const App: React.FC = () => {
       // Update username display
       if (currentUser.isLoggedIn && currentUser.displayName) {
         setUserName(currentUser.displayName);
+        // Only override photo if user hasn't set a custom one locally
         if (!localStorage.getItem('mrb_photo')) {
             setProfilePhoto(currentUser.avatar);
         }
@@ -185,46 +226,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Contacts View Helper
-  const ContactsView = ({ list, setList }: { list: Contact[], setList: any }) => {
-    const [f, setF] = useState({ name: '', phone: '', role: 'Sponsor', fellowship: 'AA' });
-    const save = () => {
-        if(!f.name) return;
-        setList([...list, { ...f, id: Date.now().toString() }]);
-        setF({ name: '', phone: '', role: 'Sponsor', fellowship: 'AA' });
-    };
-    return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-penda-purple">Phone Book</h2>
-            <div className="bg-white p-6 rounded-2xl border border-penda-border shadow-sm space-y-3">
-                <div className="flex gap-3">
-                    <input value={f.name} onChange={e=>setF({...f, name:e.target.value})} placeholder="Name" className="flex-1 p-3 border border-penda-border rounded-xl outline-none" />
-                    <input value={f.phone} onChange={e=>setF({...f, phone:e.target.value})} placeholder="Phone" className="w-32 p-3 border border-penda-border rounded-xl outline-none" />
-                </div>
-                <div className="flex gap-3">
-                    <select value={f.role} onChange={e=>setF({...f, role:e.target.value})} className="flex-1 p-3 border border-penda-border rounded-xl bg-white"><option>Sponsor</option><option>Peer</option><option>Therapist</option></select>
-                    <select value={f.fellowship} onChange={e=>setF({...f, fellowship:e.target.value})} className="flex-1 p-3 border border-penda-border rounded-xl bg-white"><option>AA</option><option>NA</option><option>CA</option><option>Other</option></select>
-                </div>
-                <button onClick={save} className="w-full bg-penda-purple text-white py-3 rounded-xl font-bold hover:bg-penda-light">Add Contact</button>
-            </div>
-            <div className="space-y-2">
-                {list.map(c => (
-                    <div key={c.id} className="bg-white p-4 rounded-xl border border-penda-border flex justify-between items-center shadow-sm">
-                        <div>
-                            <div className="font-bold text-penda-text">{c.name}</div>
-                            <div className="text-xs text-gray-500">{c.role} • {c.fellowship}</div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <a href={`tel:${c.phone}`} className="bg-penda-bg p-2 rounded-full text-penda-purple hover:bg-penda-purple hover:text-white transition-colors"><Phone size={18}/></a>
-                            <button onClick={()=>setList(list.filter(l=>l.id!==c.id))} className="text-gray-300 hover:text-red-500"><Trash2 size={18}/></button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-  };
-
   const handleNav = (id: View) => {
     setView(id);
     setMenuOpen(false);
@@ -250,11 +251,6 @@ const App: React.FC = () => {
           <div className="sticky top-0 z-40 bg-penda-cream border-b border-penda-border shadow-sm -mx-4 -mt-4 p-4 mb-4">
              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <img 
-                        src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png" 
-                        alt="Logo" 
-                        className="w-12 h-12 rounded-full object-cover mix-blend-multiply border border-penda-border aspect-square flex-shrink-0"
-                    />
                     <div className="flex flex-col leading-tight min-w-0">
                         <span className="font-bold text-penda-purple text-sm truncate">My Recovery Buddy</span>
                         <span className="text-[9px] text-penda-text uppercase font-bold truncate">By Penda Lane Behavioral Health</span>
@@ -274,9 +270,11 @@ const App: React.FC = () => {
              {/* Mobile Menu */}
              {menuOpen && (
                  <div className="absolute top-full left-0 w-full bg-white border-b border-penda-border shadow-xl rounded-b-2xl p-4 flex flex-col gap-2 z-50 animate-in slide-in-from-top-2">
+                    {/* Mobile Profile Card */}
                     <div className="bg-penda-bg p-4 rounded-xl flex items-center gap-3 mb-2">
                         <img src={profilePhoto} className="w-12 h-12 rounded-full border-2 border-penda-purple object-cover" onClick={() => document.getElementById('mob-photo')?.click()} />
                         <input type="file" id="mob-photo" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                        
                         <div>
                             <div className="font-bold text-penda-purple">{userName}</div>
                             <div className="flex gap-2 text-xs mt-1">
