@@ -206,12 +206,12 @@ function App() {
     <nav className={mobile ? "fixed bottom-0 w-full bg-white border-t border-[#e5cfe0] flex p-2 z-50 overflow-x-auto gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]" : "w-64 bg-[#f8e6f2] border-r border-[#e5cfe0] flex flex-col p-4 h-full shrink-0 overflow-y-auto"}>
       {!mobile && (
         <div className="mb-8 text-center px-2">
-          {/* LOGO & SLOGAN */}
-          <div className="relative group mx-auto w-24 h-24 mb-3">
+          {/* USER PHOTO */}
+          <div className="relative group mx-auto w-20 h-20 mb-4">
             <img 
               src={profilePhoto}
               alt="Profile" 
-              className="w-24 h-24 rounded-full border-2 border-[#7A0050] object-cover"
+              className="w-20 h-20 rounded-full border-2 border-[#7A0050] object-cover"
             />
             <label className="absolute bottom-0 right-0 bg-[#7A0050] text-white p-1 rounded-full cursor-pointer hover:bg-[#b33a89]">
               <Camera size={14} />
@@ -219,10 +219,11 @@ function App() {
             </label>
           </div>
           
+          {/* PENDA LANE BRANDING - FIXED CIRCLE */}
           <img 
             src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png" 
             alt="Penda Lane" 
-            className="w-16 h-auto mx-auto mb-2 mix-blend-multiply opacity-80"
+            className="w-20 h-20 mx-auto mb-2 rounded-full object-cover mix-blend-multiply"
           />
           <h1 className="font-bold text-[#7A0050] text-xl leading-tight">My Recovery Buddy</h1>
           <p className="text-[10px] text-[#2d1b27] uppercase tracking-wide mt-1 font-semibold">By Penda Lane<br/>Behavioral Health</p>
