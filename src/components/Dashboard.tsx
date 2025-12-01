@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { JournalEntry } from '../types';
-import { Award, TrendingUp, ShieldCheck } from 'lucide-react';
+import { JournalEntry, UserProfile } from '../types';
+import { Award, TrendingUp, ShieldCheck, LogIn, UserPlus } from 'lucide-react';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DashboardProps {
@@ -8,9 +8,10 @@ interface DashboardProps {
   setSobrietyDate: (date: string | null) => void;
   journals: JournalEntry[];
   streakCount: number;
+  user: UserProfile | null;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user }) => {
   const [daysSober, setDaysSober] = useState(0);
 
   useEffect(() => {
@@ -41,7 +42,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <header className="mb-4">
-        <h2 className="text-2xl font-bold text-penda-purple">Welcome Back</h2>
+        <h2 className="text-2xl font-bold text-penda-purple">
+          {user?.isLoggedIn ? `Welcome, ${user.displayName}` : "Welcome to Recovery Buddy"}
+        </h2>
         <p className="text-penda-light text-sm">Meetings. Sponsors. Support. In your pocket.</p>
       </header>
 
@@ -53,11 +56,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
         
         {!sobrietyDate ? (
           <div className="z-10 relative">
-            <h3 className="text-lg font-bold mb-2">Sobriety Counter</h3>
-            <div className="bg-penda-bg/20 p-3 rounded-firm border border-white/20 mb-3 text-sm">
-              Log in or create a free account to save your sobriety date securely.
-            </div>
-            <label className="block text-xs uppercase tracking-wide opacity-80 mb-1">Clean/Sober Date</label>
+            <h3 className="text-lg font-bold mb-3">Begin Your Journey</h3>
+            
+            {!user?.isLoggedIn && (
+               <div className="bg-white/10 p-4 rounded-firm border border-white/20 mb-4 backdrop-blur-sm">
+                  <p className="text-sm mb-3 font-medium">You are using the app as a Guest. Log in to sync your progress across devices.</p>
+                  <div className="flex gap-3">
+                    <a href="/login/" className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+                        <LogIn size={16} /> Log In
+                    </a>
+                    <a href="/membership-levels/" className="flex-1 bg-penda-purple border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg hover:text-penda-purple transition-colors">
+                        <UserPlus size={16} /> Join Free
+                    </a>
+                  </div>
+               </div>
+            )}
+
+            <label className="block text-xs uppercase tracking-wide opacity-80 mb-1">Set Clean/Sober Date (Local Only)</label>
             <input 
               type="date" 
               className="w-full p-2 rounded-firm text-penda-purple font-bold"
