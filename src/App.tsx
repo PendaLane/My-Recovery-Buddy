@@ -11,9 +11,15 @@ import { MeetingFinder } from './components/MeetingFinder';
 import { Phone, AlertCircle, Siren, LogOut, LogIn, Share2, Award, Flame, Menu, X, Trash2, LayoutDashboard, MapPin, BotMessageSquare, BookHeart, FileText, BookOpen } from 'lucide-react';
 import { getCurrentUser, loadState, saveState, WPState, subscribeToJournals } from './services/backend';
 
-// Contacts View Helper
-const ContactsView = ({ list, setList }: { list: Contact[], setList: any }) => {
-  const [f, setF] = useState({ name: '', phone: '', role: 'Sponsor', fellowship: 'AA' });
+// Contacts View Helper (Defined outside to prevent re-render focus loss)
+const ContactsView = ({ list, setList }: { list: Contact[], setList: React.Dispatch<React.SetStateAction<Contact[]>> }) => {
+  const [f, setF] = useState<{
+    name: string;
+    phone: string;
+    role: Contact['role'];
+    fellowship: Contact['fellowship'];
+  }>({ name: '', phone: '', role: 'Sponsor', fellowship: 'AA' });
+  
   const save = () => {
       if(!f.name) return;
       setList([...list, { ...f, id: Date.now().toString() }]);
@@ -21,24 +27,31 @@ const ContactsView = ({ list, setList }: { list: Contact[], setList: any }) => {
   };
   return (
       <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-penda-purple">Phone Book</h2>
-          <div className="bg-white p-6 rounded-2xl border border-penda-border shadow-sm space-y-3">
+          <header>
+            <h2 className="text-2xl font-bold text-penda-purple">Phone Book</h2>
+            <p className="text-sm text-penda-light mt-1">Keep your support network close.</p>
+          </header>
+          
+          <div className="bg-white p-6 rounded-soft border border-penda-border shadow-sm space-y-3">
+              <h3 className="font-bold text-penda-purple mb-2">Add Contact</h3>
               <div className="flex gap-3">
-                  <input value={f.name} onChange={e=>setF({...f, name:e.target.value})} placeholder="Name" className="flex-1 p-3 border border-penda-border rounded-xl outline-none" />
-                  <input value={f.phone} onChange={e=>setF({...f, phone:e.target.value})} placeholder="Phone" className="w-32 p-3 border border-penda-border rounded-xl outline-none" />
+                  <input value={f.name} onChange={e=>setF({...f, name:e.target.value})} placeholder="Name" className="flex-1 p-3 border border-penda-border rounded-firm outline-none focus:border-penda-purple" />
+                  <input value={f.phone} onChange={e=>setF({...f, phone:e.target.value})} placeholder="Phone" className="w-32 p-3 border border-penda-border rounded-firm outline-none focus:border-penda-purple" />
               </div>
               <div className="flex gap-3">
-                  <select value={f.role} onChange={e=>setF({...f, role:e.target.value})} className="flex-1 p-3 border border-penda-border rounded-xl bg-white"><option>Sponsor</option><option>Peer</option><option>Therapist</option></select>
-                  <select value={f.fellowship} onChange={e=>setF({...f, fellowship:e.target.value})} className="flex-1 p-3 border border-penda-border rounded-xl bg-white"><option>AA</option><option>NA</option><option>CA</option><option>Other</option></select>
+                  <select value={f.role} onChange={e=>setF({...f, role:e.target.value as Contact['role']})} className="flex-1 p-3 border border-penda-border rounded-firm bg-white"><option>Sponsor</option><option>Peer</option><option>Therapist</option><option>Family</option></select>
+                  <select value={f.fellowship} onChange={e=>setF({...f, fellowship:e.target.value as Contact['fellowship']})} className="flex-1 p-3 border border-penda-border rounded-firm bg-white"><option>AA</option><option>NA</option><option>CA</option><option>Other</option></select>
               </div>
-              <button onClick={save} className="w-full bg-penda-purple text-white py-3 rounded-xl font-bold hover:bg-penda-light">Add Contact</button>
+              <button onClick={save} className="w-full bg-penda-purple text-white py-3 rounded-firm font-bold hover:bg-penda-light transition-colors">Save Contact</button>
           </div>
-          <div className="space-y-2">
+
+          <div className="space-y-3">
+              {list.length === 0 && <p className="text-penda-light text-sm italic">No contacts saved yet.</p>}
               {list.map(c => (
-                  <div key={c.id} className="bg-white p-4 rounded-xl border border-penda-border flex justify-between items-center shadow-sm">
+                  <div key={c.id} className="bg-white p-4 rounded-firm border border-penda-border flex justify-between items-center shadow-sm">
                       <div>
                           <div className="font-bold text-penda-text">{c.name}</div>
-                          <div className="text-xs text-gray-500">{c.role} • {c.fellowship}</div>
+                          <div className="text-xs text-penda-light">{c.role} • {c.fellowship}</div>
                       </div>
                       <div className="flex items-center gap-3">
                           <a href={`tel:${c.phone}`} className="bg-penda-bg p-2 rounded-full text-penda-purple hover:bg-penda-purple hover:text-white transition-colors"><Phone size={18}/></a>
@@ -82,7 +95,6 @@ const App: React.FC = () => {
       // Update username display
       if (currentUser.isLoggedIn && currentUser.displayName) {
         setUserName(currentUser.displayName);
-        // Only override photo if user hasn't set a custom one locally
         if (!localStorage.getItem('mrb_photo')) {
             setProfilePhoto(currentUser.avatar);
         }
@@ -90,13 +102,13 @@ const App: React.FC = () => {
         setUserName(localStorage.getItem('mrb_username') || "Recovery Buddy");
       }
 
-      // Fetch WP State (Logs, Settings, etc.)
+      // Fetch WP State
       const state = await loadState(currentUser.isLoggedIn);
       if (state) {
         setSobrietyDate(state.sobrietyDate);
         setLogs(state.logs || []);
         setContacts(state.contacts || []);
-        setStepWork(state.sponsors || []); // 'sponsors' maps to stepWork in UI
+        setStepWork(state.sponsors || []);
         setBadges(state.badges || []);
         setStreak(state.streak || { current: 0, longest: 0, lastCheckInDate: null });
         setJournalCount(state.journalCount || 0);
