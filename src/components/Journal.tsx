@@ -12,7 +12,7 @@ interface JournalProps {
 
 export const Journal: React.FC<JournalProps> = ({ entries, addEntry, user }) => {
   const [view, setView] = useState<'list' | 'new'>('list');
-  const [mood, setMood] = useState<string>('Okay');
+  const [mood, setMood] = useState<JournalEntry['mood']>('Okay');
   const [text, setText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
