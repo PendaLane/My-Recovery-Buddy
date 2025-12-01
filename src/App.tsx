@@ -4,13 +4,13 @@ import {
   LayoutDashboard, BookHeart, BotMessageSquare, MapPin, Phone, 
   AlertCircle, FileText, Award, BookOpen, UserCog, LogOut, 
   TrendingUp, ShieldCheck, Send, Bot, Loader2, Sparkles, Save, 
-  Plus, Trash2, User, Mail, List, Siren, CheckCircle, ExternalLink 
+  Plus, Trash2, User, Mail, List, Siren, CheckCircle, ExternalLink,
+  Share2, Camera, Map
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
 import { GoogleGenAI } from '@google/genai';
 
 // --- CONFIGURATION ---
-// This relies on the vite.config.ts 'define' setting we made earlier
 const GEMINI_API_KEY = process.env.API_KEY || "";
 
 // --- TYPES ---
@@ -56,7 +56,6 @@ interface Badge {
 }
 
 // --- AI SERVICE ---
-// Initialize outside component to avoid recreation
 let aiClient: GoogleGenAI | null = null;
 if (GEMINI_API_KEY) {
   try {
@@ -106,6 +105,7 @@ function App() {
   const [badges, setBadges] = useState<Badge[]>(JSON.parse(localStorage.getItem('mrb_badges') || '[]'));
   const [streak, setStreak] = useState(parseInt(localStorage.getItem('mrb_streak') || '0'));
   const [lastCheckIn, setLastCheckIn] = useState(localStorage.getItem('mrb_last_checkin') || '');
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('mrb_photo') || "https://secure.gravatar.com/avatar/?s=96&d=mm&r=g");
 
   // -- PERSISTENCE --
   useEffect(() => {
@@ -122,6 +122,7 @@ function App() {
   useEffect(() => localStorage.setItem('mrb_badges', JSON.stringify(badges)), [badges]);
   useEffect(() => localStorage.setItem('mrb_streak', streak.toString()), [streak]);
   useEffect(() => localStorage.setItem('mrb_last_checkin', lastCheckIn), [lastCheckIn]);
+  useEffect(() => localStorage.setItem('mrb_photo', profilePhoto), [profilePhoto]);
 
   // -- CALCULATIONS & LOGIC --
   const daysSober = sobrietyDate ? Math.floor((new Date().getTime() - new Date(sobrietyDate).getTime()) / (1000 * 60 * 60 * 24)) : 0;
@@ -134,6 +135,24 @@ function App() {
   };
 
   const handleCheckIn = () => {
+    // 1. Get GPS Location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const locationStr = `Lat: ${position.coords.latitude.toFixed(4)}, Lon: ${position.coords.longitude.toFixed(4)}`;
+          completeCheckIn(locationStr);
+        },
+        (error) => {
+          console.warn("GPS Error", error);
+          completeCheckIn("Location Unavailable");
+        }
+      );
+    } else {
+      completeCheckIn("GPS Not Supported");
+    }
+  };
+
+  const completeCheckIn = (location: string) => {
     const today = new Date().toISOString().slice(0, 10);
     let newStreak = streak;
     
@@ -148,13 +167,37 @@ function App() {
       setLastCheckIn(today);
     }
 
-    setLogs([{ id: Date.now().toString(), ts: new Date().toISOString(), type: 'Check-In' }, ...logs]);
+    setLogs([{ id: Date.now().toString(), ts: new Date().toISOString(), type: 'Check-In', location }, ...logs]);
     
     // Check Badge Logic
     if (logs.length === 0) awardBadge('first_mtg', 'First Meeting');
     if (newStreak === 7) awardBadge('streak_7', '7 Day Streak');
     if (newStreak === 30) awardBadge('streak_30', '30 Day Streak');
-    alert("Checked In!");
+    alert("Checked In! " + location);
+  }
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const shareApp = async () => {
+    const data = {
+      title: 'My Recovery Buddy',
+      text: 'Check out this free recovery companion app by Penda Lane.',
+      url: window.location.href
+    };
+    if (navigator.share) {
+      try { await navigator.share(data); } catch(e) {}
+    } else {
+      alert("Copy this link to share: " + window.location.href);
+    }
   };
 
   // --- SUB-COMPONENTS ---
@@ -164,14 +207,26 @@ function App() {
       {!mobile && (
         <div className="mb-8 text-center px-2">
           {/* LOGO & SLOGAN */}
+          <div className="relative group mx-auto w-24 h-24 mb-3">
+            <img 
+              src={profilePhoto}
+              alt="Profile" 
+              className="w-24 h-24 rounded-full border-2 border-[#7A0050] object-cover"
+            />
+            <label className="absolute bottom-0 right-0 bg-[#7A0050] text-white p-1 rounded-full cursor-pointer hover:bg-[#b33a89]">
+              <Camera size={14} />
+              <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+            </label>
+          </div>
+          
           <img 
             src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png" 
             alt="Penda Lane" 
-            className="w-24 h-24 rounded-full mx-auto mb-2 border border-[#e5cfe0] object-cover"
-            style={{ mixBlendMode: 'multiply' }}
+            className="w-16 h-auto mx-auto mb-2 mix-blend-multiply opacity-80"
           />
-          <h1 className="font-bold text-[#7A0050] text-lg leading-tight">Penda Lane<br/>Behavioral Health</h1>
-          <p className="text-xs text-[#b33a89] mt-2 font-medium italic">Meetings. Sponsors. Support.<br/>In your pocket.</p>
+          <h1 className="font-bold text-[#7A0050] text-xl leading-tight">My Recovery Buddy</h1>
+          <p className="text-[10px] text-[#2d1b27] uppercase tracking-wide mt-1 font-semibold">By Penda Lane<br/>Behavioral Health</p>
+          <p className="text-xs text-[#b33a89] mt-3 font-medium italic border-t border-[#e5cfe0] pt-2">"Meetings. Sponsors. Support.<br/>In your pocket."</p>
         </div>
       )}
       
@@ -191,6 +246,9 @@ function App() {
       ))}
 
       <div className="mt-auto pt-4 border-t border-[#e5cfe0]/50 flex flex-col gap-2">
+        <button onClick={shareApp} className="flex items-center gap-3 p-3 text-sm text-[#7A0050] hover:bg-white rounded-lg">
+            <Share2 size={20} /> {!mobile && "Share App"}
+        </button>
         <a href="https://pendalane.com/membership-account/" className="flex items-center gap-3 p-3 text-sm text-[#7A0050] hover:bg-white rounded-lg">
             <UserCog size={20} /> {!mobile && "My Membership"}
         </a>
@@ -207,12 +265,16 @@ function App() {
       <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 relative">
         {/* Mobile Header */}
         {mobile && (
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#e5cfe0]">
-             <img src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png" className="w-10 h-10 rounded-full mix-blend-multiply" />
-             <div>
-                <h1 className="font-bold text-[#7A0050]">Penda Lane</h1>
-                <p className="text-[10px] text-[#b33a89]">My Recovery Buddy</p>
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#e5cfe0]">
+             <div className="flex items-center gap-3">
+                <img src={profilePhoto} className="w-10 h-10 rounded-full border border-[#7A0050] object-cover" onClick={() => document.getElementById('mob-photo')?.click()} />
+                <input type="file" id="mob-photo" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                <div>
+                    <h1 className="font-bold text-[#7A0050]">My Recovery Buddy</h1>
+                    <p className="text-[10px] text-[#b33a89]">By Penda Lane</p>
+                </div>
              </div>
+             <button onClick={shareApp}><Share2 className="text-[#7A0050]"/></button>
           </div>
         )}
 
@@ -292,9 +354,12 @@ function App() {
                     </div>
                     <div className="max-h-60 overflow-y-auto space-y-2">
                         {logs.length === 0 ? <p className="text-sm text-gray-400 italic">No logs yet.</p> : logs.map(l => (
-                            <div key={l.id} className="flex justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm">
-                                <span>{new Date(l.ts).toLocaleString()}</span>
-                                <b className={l.type === 'Check-In' ? 'text-green-600' : 'text-gray-500'}>{l.type}</b>
+                            <div key={l.id} className="flex flex-col p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm">
+                                <div className="flex justify-between">
+                                    <span>{new Date(l.ts).toLocaleString()}</span>
+                                    <b className={l.type === 'Check-In' ? 'text-green-600' : 'text-gray-500'}>{l.type}</b>
+                                </div>
+                                {l.location && <div className="text-xs text-gray-400 mt-1 flex items-center gap-1"><MapPin size={10}/> {l.location}</div>}
                             </div>
                         ))}
                     </div>
