@@ -8,11 +8,15 @@ import { StepWorkComponent } from './components/StepWork';
 import { Readings } from './components/Readings';
 import { Badges } from './components/Badges';
 import { MeetingFinder } from './components/MeetingFinder';
-import { Phone, AlertCircle, Siren, LogOut, LogIn, Share2, Award, Flame, Menu, X, Trash2, LayoutDashboard, MapPin, BotMessageSquare, BookHeart, FileText, BookOpen } from 'lucide-react';
+import { 
+  AlertCircle, Siren, LogOut, LogIn, Menu, X, 
+  Phone, Trash2, Flame, Award,
+  LayoutDashboard, MapPin, BotMessageSquare, BookHeart, FileText, BookOpen, Share2 
+} from 'lucide-react';
 import { getCurrentUser, loadState, saveState, WPState, subscribeToJournals } from './services/backend';
 
 // Contacts View Helper (Defined outside to prevent re-render focus loss)
-const ContactsView = ({ list, setList }: { list: Contact[], setList: React.Dispatch<React.SetStateAction<Contact[]>> }) => {
+const ContactsView = ({ list, setList, isLoggedIn }: { list: Contact[], setList: React.Dispatch<React.SetStateAction<Contact[]>>, isLoggedIn: boolean }) => {
   const [f, setF] = useState<{
     name: string;
     phone: string;
@@ -25,6 +29,7 @@ const ContactsView = ({ list, setList }: { list: Contact[], setList: React.Dispa
       setList([...list, { ...f, id: Date.now().toString() }]);
       setF({ name: '', phone: '', role: 'Sponsor', fellowship: 'AA' });
   };
+
   return (
       <div className="space-y-6">
           <header>
@@ -32,6 +37,10 @@ const ContactsView = ({ list, setList }: { list: Contact[], setList: React.Dispa
             <p className="text-sm text-penda-light mt-1">Keep your support network close.</p>
           </header>
           
+          <div className="bg-penda-bg p-3 rounded-firm border border-dashed border-penda-light text-xs text-penda-text">
+            {isLoggedIn ? "Your contacts are saved to your account." : "Log in to save your contacts securely."}
+          </div>
+
           <div className="bg-white p-6 rounded-soft border border-penda-border shadow-sm space-y-3">
               <h3 className="font-bold text-penda-purple mb-2">Add Contact</h3>
               <div className="flex gap-3">
@@ -164,6 +173,9 @@ const App: React.FC = () => {
   };
 
   const handleAddJournal = (entry: JournalEntry) => {
+    // Update local state directly as fallback for when real-time sync is unavailable
+    setJournals(prev => [entry, ...prev]);
+
     const newCount = journalCount + 1;
     setJournalCount(newCount);
     if (newCount === 1) awardBadge('first_journal', 'First Journal Entry');
@@ -246,6 +258,46 @@ const App: React.FC = () => {
   if (isLoading) {
       return <div className="h-screen flex items-center justify-center bg-penda-cream text-penda-purple">Loading...</div>;
   }
+
+  const renderContent = () => {
+    switch (view) {
+      case View.DASHBOARD:
+        return <Dashboard sobrietyDate={sobrietyDate} setSobrietyDate={setSobrietyDate} journals={journals} streakCount={streak.current} />;
+      case View.MEETINGS:
+        return <MeetingFinder logs={logs} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut} />;
+      case View.AI_COACH:
+        return <AICoach />;
+      case View.JOURNAL:
+        return <Journal entries={journals} addEntry={handleAddJournal} user={user!} />;
+      case View.STEPWORK:
+        return <StepWorkComponent 
+            stepWorkList={stepWork} 
+            saveStepWork={(w) => setStepWork(prev => [...prev, w])}
+            deleteStepWork={(id) => setStepWork(prev => prev.filter(i => i.id !== id))} 
+        />;
+      case View.READINGS:
+          return <Readings />;
+      case View.BADGES:
+          return <Badges badges={badges} streak={streak} />;
+      case View.CONTACTS:
+          return <ContactsView list={contacts} setList={setContacts} isLoggedIn={user?.isLoggedIn || false} />;
+      case View.HELP:
+          return (
+              <div className="text-center pt-10 max-w-lg mx-auto">
+                  <Siren size={80} className="mx-auto text-red-500 animate-pulse" />
+                  <h2 className="text-3xl font-bold mt-6 mb-2 text-penda-text">Immediate Crisis Support</h2>
+                  <p className="text-penda-light mb-8">If you are in danger or need immediate help, these options connect you now.</p>
+                  <div className="space-y-4">
+                      <a href="tel:988" className="block w-full bg-red-600 text-white p-4 rounded-xl font-bold text-xl hover:bg-red-700 shadow-lg">CALL 988</a>
+                      <a href="sms:988" className="block w-full bg-white border-2 border-red-600 text-red-600 p-4 rounded-xl text-lg font-bold hover:bg-red-50">TEXT 988</a>
+                      <a href="https://findtreatment.gov" target="_blank" className="block w-full bg-penda-text text-white p-4 rounded-xl text-lg font-bold hover:opacity-90">FIND TREATMENT NEAR YOU</a>
+                  </div>
+              </div>
+          );
+      default:
+        return <div>Not found</div>;
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-penda-cream text-penda-text">
@@ -337,26 +389,7 @@ const App: React.FC = () => {
 
         {/* Content Area */}
         <div className="max-w-4xl mx-auto">
-            {view === View.DASHBOARD && <Dashboard sobrietyDate={sobrietyDate} setSobrietyDate={setSobrietyDate} journals={journals} streakCount={streak.current} />}
-            {view === View.MEETINGS && <MeetingFinder logs={logs} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut} />}
-            {view === View.AI_COACH && <AICoach />}
-            {view === View.JOURNAL && <Journal entries={journals} addEntry={handleAddJournal} user={user!} />}
-            {view === View.STEPWORK && <StepWorkComponent stepWorkList={stepWork} saveStepWork={w=>setStepWork(prev=>[...prev, w])} deleteStepWork={id=>setStepWork(prev=>prev.filter(i=>i.id!==id))} />}
-            {view === View.BADGES && <Badges badges={badges} streak={streak} />}
-            {view === View.READINGS && <Readings />}
-            {view === View.CONTACTS && <ContactsView list={contacts} setList={setContacts} />}
-            {view === View.HELP && (
-                <div className="text-center pt-10 max-w-lg mx-auto">
-                    <Siren size={80} className="mx-auto text-red-500 animate-pulse" />
-                    <h2 className="text-3xl font-bold mt-6 mb-2 text-penda-text">Immediate Crisis Support</h2>
-                    <p className="text-penda-light mb-8">If you are in danger or need immediate help, these options connect you now.</p>
-                    <div className="space-y-4">
-                        <a href="tel:988" className="block w-full bg-red-600 text-white p-4 rounded-xl font-bold text-xl hover:bg-red-700 shadow-lg">CALL 988</a>
-                        <a href="sms:988" className="block w-full bg-white border-2 border-red-600 text-red-600 p-4 rounded-xl text-lg font-bold hover:bg-red-50">TEXT 988</a>
-                        <a href="https://findtreatment.gov" target="_blank" className="block w-full bg-penda-text text-white p-4 rounded-xl text-lg font-bold hover:opacity-90">FIND TREATMENT NEAR YOU</a>
-                    </div>
-                </div>
-            )}
+            {renderContent()}
         </div>
       </main>
     </div>
