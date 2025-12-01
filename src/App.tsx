@@ -8,7 +8,7 @@ import { StepWorkComponent } from './components/StepWork';
 import { Readings } from './components/Readings';
 import { Badges } from './components/Badges';
 import { MeetingFinder } from './components/MeetingFinder';
-import { Phone, AlertCircle, Siren, LogOut, LogIn, Camera, Share2, Award, Flame, Menu, X, LayoutDashboard, MapPin, BotMessageSquare, BookHeart, FileText, BookOpen, UserCog } from 'lucide-react';
+import { Phone, AlertCircle, Siren, LogOut, LogIn, Camera, Share2, Award, Flame, Menu, X, Trash2, LayoutDashboard, MapPin, BotMessageSquare, BookHeart, FileText, BookOpen } from 'lucide-react';
 import { getCurrentUser, loadState, saveState, WPState, subscribeToJournals } from './services/backend';
 
 const App: React.FC = () => {
@@ -39,10 +39,9 @@ const App: React.FC = () => {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
 
-      // Update username display priority: WP Name > Local Storage > Default
+      // Update username display
       if (currentUser.isLoggedIn && currentUser.displayName) {
         setUserName(currentUser.displayName);
-        // Only override photo if user hasn't set a custom one locally
         if (!localStorage.getItem('mrb_photo')) {
             setProfilePhoto(currentUser.avatar);
         }
@@ -56,7 +55,7 @@ const App: React.FC = () => {
         setSobrietyDate(state.sobrietyDate);
         setLogs(state.logs || []);
         setContacts(state.contacts || []);
-        setStepWork(state.sponsors || []); 
+        setStepWork(state.sponsors || []); // 'sponsors' maps to stepWork in UI
         setBadges(state.badges || []);
         setStreak(state.streak || { current: 0, longest: 0, lastCheckInDate: null });
         setJournalCount(state.journalCount || 0);
@@ -186,7 +185,7 @@ const App: React.FC = () => {
     }
   };
 
-  // Contacts View Helper (Kept mostly internal to reduce file count issues for now)
+  // Contacts View Helper
   const ContactsView = ({ list, setList }: { list: Contact[], setList: any }) => {
     const [f, setF] = useState({ name: '', phone: '', role: 'Sponsor', fellowship: 'AA' });
     const save = () => {
@@ -232,7 +231,7 @@ const App: React.FC = () => {
   };
 
   if (isLoading) {
-      return <div className="h-screen flex items-center justify-center bg-penda-cream text-penda-purple"><Loader2 className="animate-spin mr-2"/> Loading...</div>;
+      return <div className="h-screen flex items-center justify-center bg-penda-cream text-penda-purple">Loading...</div>;
   }
 
   return (
@@ -254,12 +253,12 @@ const App: React.FC = () => {
                     <img 
                         src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png" 
                         alt="Logo" 
-                        className="w-14 h-14 rounded-full object-cover mix-blend-multiply border border-penda-border aspect-square flex-shrink-0"
+                        className="w-12 h-12 rounded-full object-cover mix-blend-multiply border border-penda-border aspect-square flex-shrink-0"
                     />
-                    <div className="flex flex-col justify-center min-w-0">
-                        <span className="font-bold text-penda-purple text-base leading-tight">My Recovery Buddy</span>
-                        <span className="text-[10px] text-penda-text uppercase font-bold leading-tight mt-0.5">By Penda Lane Behavioral Health</span>
-                        <span className="text-[9px] text-penda-light italic leading-tight mt-0.5">"Meetings. Sponsors. Support. In your pocket."</span>
+                    <div className="flex flex-col leading-tight min-w-0">
+                        <span className="font-bold text-penda-purple text-sm truncate">My Recovery Buddy</span>
+                        <span className="text-[9px] text-penda-text uppercase font-bold truncate">By Penda Lane Behavioral Health</span>
+                        <span className="text-[8px] text-penda-light italic truncate">"Meetings. Sponsors. Support. In your pocket."</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 ml-2 flex-shrink-0">
@@ -267,7 +266,7 @@ const App: React.FC = () => {
                         onClick={() => setMenuOpen(!menuOpen)} 
                         className="p-2 bg-white rounded-lg border border-penda-border text-penda-purple hover:bg-penda-bg"
                     >
-                        {menuOpen ? <X size={24} /> : <Menu size={24} />}
+                        {menuOpen ? <X size={22} /> : <Menu size={22} />}
                     </button>
                 </div>
              </div>
@@ -275,25 +274,14 @@ const App: React.FC = () => {
              {/* Mobile Menu */}
              {menuOpen && (
                  <div className="absolute top-full left-0 w-full bg-white border-b border-penda-border shadow-xl rounded-b-2xl p-4 flex flex-col gap-2 z-50 animate-in slide-in-from-top-2">
-                    {/* Mobile Profile Card */}
                     <div className="bg-penda-bg p-4 rounded-xl flex items-center gap-3 mb-2">
-                        <div className="relative">
-                            <img src={profilePhoto} className="w-14 h-14 rounded-full border-2 border-penda-purple object-cover" />
-                            <label className="absolute bottom-0 right-0 bg-penda-purple text-white p-1 rounded-full" onClick={() => document.getElementById('mob-photo')?.click()}>
-                                <Camera size={10} />
-                            </label>
-                        </div>
+                        <img src={profilePhoto} className="w-12 h-12 rounded-full border-2 border-penda-purple object-cover" onClick={() => document.getElementById('mob-photo')?.click()} />
                         <input type="file" id="mob-photo" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
-                        
-                        <div className="flex flex-col">
-                            {/* DYNAMIC USERNAME DISPLAY */}
-                            <div className="font-bold text-penda-purple text-lg">
-                                {user?.isLoggedIn ? user.displayName : userName}
-                            </div>
-                            
-                            <div className="flex gap-3 text-xs mt-1">
-                                <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-penda-border"><Flame size={12} className="text-orange-500"/> {streak.current}</span>
-                                <span className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-penda-border"><Award size={12} className="text-yellow-600"/> {badges.length}</span>
+                        <div>
+                            <div className="font-bold text-penda-purple">{userName}</div>
+                            <div className="flex gap-2 text-xs mt-1">
+                                <span className="flex items-center gap-1"><Flame size={12} className="text-orange-500"/> {streak.current}</span>
+                                <span className="flex items-center gap-1"><Award size={12} className="text-yellow-600"/> {badges.length}</span>
                             </div>
                         </div>
                     </div>
@@ -343,7 +331,7 @@ const App: React.FC = () => {
             {view === View.MEETINGS && <MeetingFinder logs={logs} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut} />}
             {view === View.AI_COACH && <AICoach />}
             {view === View.JOURNAL && <Journal entries={journals} addEntry={handleAddJournal} user={user!} />}
-            {view === View.STEPWORK && <StepWorkComponent stepWorkList={stepWork} saveStepWork={w=>setStepWork(prev=>[...prev, w])} deleteStepWork={id=>setStepwork(prev=>prev.filter(i=>i.id!==id))} />}
+            {view === View.STEPWORK && <StepWorkComponent stepWorkList={stepWork} saveStepWork={w=>setStepWork(prev=>[...prev, w])} deleteStepWork={id=>setStepWork(prev=>prev.filter(i=>i.id!==id))} />}
             {view === View.BADGES && <Badges badges={badges} streak={streak} />}
             {view === View.READINGS && <Readings />}
             {view === View.CONTACTS && <ContactsView list={contacts} setList={setContacts} />}
