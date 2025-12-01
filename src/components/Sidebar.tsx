@@ -62,11 +62,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
             <img
               src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png"
               alt="Penda Lane"
-              className="w-24 h-24 rounded-full object-cover mix-blend-multiply mb-2 aspect-square border border-penda-border"
+              className="w-20 h-20 rounded-full object-cover mix-blend-multiply mb-3 border border-penda-border"
             />
-            <h1 className="font-bold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
-            <p className="text-[10px] text-penda-text uppercase tracking-wide mt-1 font-bold">By Penda Lane Behavioral Health</p>
-            <p className="text-[10px] text-penda-light italic mt-2 border-t border-penda-border pt-2 w-full">"Meetings. Sponsors. Support. In your pocket."</p>
+            <h1 className="font-bold text-penda-purple text-lg leading-tight">My Recovery Buddy</h1>
+            <p className="text-xs text-penda-light mt-1">Powered by Penda Lane</p>
         </div>
       )}
       
@@ -97,7 +96,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
         );
       })}
 
-      {/* External WP Links */}
+      {/* External WP Links & Share */}
       <div className={isMobile ? "flex gap-2" : "mt-4 pt-4 border-t border-penda-border/50"}>
         <button
             onClick={shareApp}
@@ -133,6 +132,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
            <AlertCircle size={isMobile ? 18 : 20} />
            <span>Help & Crisis</span>
         </button>
+
+        {isLoggedIn && !isMobile && (
+          <a href="/wp-login.php?action=logout&redirect_to=/" className="flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-penda-light hover:text-penda-purple hover:bg-white w-full text-left">
+            <LogOut size={20} />
+            <span>Log Out</span>
+          </a>
+        )}
       </div>
     </nav>
   );
