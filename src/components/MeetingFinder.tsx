@@ -51,6 +51,12 @@ export const MeetingFinder: React.FC = () => {
     setIsLoading(false);
   };
 
+  const runAIPrompt = (prompt: string) => {
+    const loc = (location || 'my state').trim();
+    const q = encodeURIComponent(`${prompt} in ${loc}`);
+    window.open(`https://www.google.com/maps/search/${q}`, '_blank');
+  };
+
   return (
     <div className="space-y-6">
       <header>
