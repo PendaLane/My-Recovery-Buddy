@@ -37,7 +37,7 @@ export const StepWorkComponent: React.FC<StepWorkProps> = ({ stepWorkList, saveS
   return (
     <div className="space-y-6">
       <header>
-        <h2 className="text-2xl font-bold text-penda-purple">My Stepwork</h2>
+        <h2 className="text-2xl font-bold text-penda-purple">My Step Work</h2>
         <div className="bg-penda-bg p-3 rounded-firm border border-dashed border-penda-light mt-2 text-xs text-penda-text">
             Log in or create a free account to save your sponsor and stepwork notes.
         </div>
