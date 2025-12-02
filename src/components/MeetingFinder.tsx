@@ -1,28 +1,36 @@
 import React, { useMemo, useState } from 'react';
 import { MapPin, Send, Sparkles, Wand2 } from 'lucide-react';
 
+const quickIdeas = [
+  'Find the closest beginner-friendly AA meeting',
+  'Locate tonight’s NA speaker meeting near me',
+  'Show CA meetings within 10 miles this weekend',
+  'Find LGBTQ+ friendly recovery meetings nearby',
+  'Smart Recovery meetings near me',
+];
+
+const directories = [
+  { href: 'https://aa.org', label: 'AA.org (find local meetings)' },
+  { href: 'https://www.smartrecovery.org/local/', label: 'SMART Recovery (meeting search)' },
+  { href: 'https://na.org/meetingsearch/', label: 'NA.org (meeting search)' },
+  { href: 'https://ca.org/meetings/', label: 'CA.org (meeting list)' },
+];
+
 export const MeetingFinder: React.FC = () => {
   const [location, setLocation] = useState('');
   const [prompt, setPrompt] = useState('');
-  const aiPrompts = useMemo(
-    () => [
-      'Find the closest beginner-friendly AA meeting',
-      'Locate tonight’s NA speaker meeting near me',
-      'Show CA meetings within 10 miles this weekend',
-      'Find LGBTQ+ friendly recovery meetings nearby',
-      'Smart Recovery meetings near me',
-    ],
-    []
-  );
+  const aiPrompts = useMemo(() => quickIdeas, []);
 
   const searchMeetings = (type: string) => {
     const loc = (location || 'near me').trim();
     const q = encodeURIComponent(`${type} meeting ${loc}`);
-    window.open('https://www.google.com/maps/search/' + q, '_blank');
+    if (typeof window !== 'undefined') {
+      window.open('https://www.google.com/maps/search/' + q, '_blank');
+    }
   };
 
   const useMyLocation = () => {
-    if (!navigator.geolocation) {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       alert('Location services are not available in this browser.');
       return;
     }
@@ -46,48 +54,82 @@ export const MeetingFinder: React.FC = () => {
     const query = encodeURIComponent(
       `${prompt.trim()} recovery meeting options ${loc} with official listings, schedule, and address`
     );
-    window.open('https://www.google.com/search?q=' + query, '_blank');
+    if (typeof window !== 'undefined') {
+      window.open('https://www.google.com/search?q=' + query, '_blank');
+    }
   };
 
   return (
     <div className="space-y-6">
       <header>
         <h2 className="text-2xl font-bold text-penda-purple">Find A Meeting</h2>
-        <p className="text-sm text-penda-light">Search trusted meeting directories or launch a location-aware Google search.</p>
+        <p className="text-sm text-penda-light">
+          Search trusted directories or launch a location-aware Google search with clear wording.
+        </p>
       </header>
 
-      {/* Search Card */}
-      <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border">
-        <label className="block text-xs font-medium text-penda-light mb-1">City, ZIP, or Area</label>
-        <div className="relative mb-4">
+      <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border space-y-4">
+        <div>
+          <label className="block text-xs font-medium text-penda-light mb-1">City, ZIP, or Area</label>
+          <div className="relative">
             <input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Example: Frederick, MD"
-                className="w-full p-2 border border-penda-border rounded-firm focus:outline-none focus:border-penda-purple pl-9"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Example: Frederick, MD"
+              className="w-full p-2 border border-penda-border rounded-firm focus:outline-none focus:border-penda-purple pl-9"
             />
             <MapPin className="absolute left-3 top-2.5 text-penda-border" size={16} />
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={useMyLocation}
             className="text-xs bg-penda-bg text-penda-purple border border-penda-border px-3 py-2 rounded-firm hover:bg-white transition-colors"
           >
             Use my location
           </button>
-          <button onClick={() => searchMeetings('AA')} className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm hover:bg-penda-light transition-colors">AA near me</button>
-          <button onClick={() => searchMeetings('NA')} className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors">NA near me</button>
-          <button onClick={() => searchMeetings('CA')} className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors">CA near me</button>
-          <button onClick={() => searchMeetings('Smart Recovery')} className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors">Smart Recovery near me</button>
+          <button
+            onClick={() => searchMeetings('AA')}
+            className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm hover:bg-penda-light transition-colors"
+          >
+            AA near me
+          </button>
+          <button
+            onClick={() => searchMeetings('NA')}
+            className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors"
+          >
+            NA near me
+          </button>
+          <button
+            onClick={() => searchMeetings('CA')}
+            className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors"
+          >
+            CA near me
+          </button>
+          <button
+            onClick={() => searchMeetings('Smart Recovery')}
+            className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors"
+          >
+            Smart Recovery near me
+          </button>
         </div>
 
-        <h3 className="text-penda-purple font-bold text-sm mb-2">Official Meeting Sites</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <a href="https://aa.org" target="_blank" className="text-xs bg-penda-bg text-penda-purple px-3 py-3 rounded-firm border border-penda-border hover:bg-white text-center w-full">AA.org (find local meetings)</a>
-            <a href="https://www.smartrecovery.org/local/" target="_blank" className="text-xs bg-penda-bg text-penda-purple px-3 py-3 rounded-firm border border-penda-border hover:bg-white text-center w-full">SMART Recovery (meeting search)</a>
-            <a href="https://na.org/meetingsearch/" target="_blank" className="text-xs bg-penda-bg text-penda-purple px-3 py-3 rounded-firm border border-penda-border hover:bg-white text-center w-full">NA.org (meeting search)</a>
-            <a href="https://ca.org/meetings/" target="_blank" className="text-xs bg-penda-bg text-penda-purple px-3 py-3 rounded-firm border border-penda-border hover:bg-white text-center w-full">CA.org (meeting list)</a>
+        <div>
+          <h3 className="text-penda-purple font-bold text-sm mb-2">Official Meeting Sites</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {directories.map((site) => (
+              <a
+                key={site.href}
+                href={site.href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs bg-penda-bg text-penda-purple px-3 py-3 rounded-firm border border-penda-border hover:bg-white text-center w-full"
+              >
+                {site.label}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -114,7 +156,9 @@ export const MeetingFinder: React.FC = () => {
             </button>
           </div>
 
-          <p className="text-xs text-penda-light">We’ll open a Google search using your wording plus your location to surface accurate meeting options.</p>
+          <p className="text-xs text-penda-light">
+            We’ll open a Google search using your wording plus your location to surface accurate meeting options.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
