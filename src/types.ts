@@ -48,6 +48,7 @@ export interface ChatMessage {
 
 export interface StepWork {
   id: string;
+  memberName?: string;
   sponsorName: string;
   sponsorPhone: string;
   sponsorEmail: string;
