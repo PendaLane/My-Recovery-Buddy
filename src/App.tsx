@@ -203,7 +203,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-penda-text">
+    <div className="min-h-screen bg-penda-bg text-penda-text">
       <div className="flex flex-col md:flex-row min-h-screen">
         <Sidebar
           currentView={currentView}
