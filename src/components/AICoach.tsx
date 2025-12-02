@@ -63,8 +63,8 @@ export const AICoach: React.FC = () => {
             <Bot size={24} />
         </div>
         <div>
-            <h2 className="font-bold text-penda-purple">Community Chat AI</h2>
-            <p className="text-xs text-penda-light">Be kind and protect your privacy. This is a support space.</p>
+            <h2 className="font-bold text-penda-purple">My AI Companion</h2>
+            <p className="text-xs text-penda-light">Private, one-on-one support. Be kind to yourself and protect your privacy.</p>
         </div>
       </div>
 
