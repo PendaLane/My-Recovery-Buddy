@@ -83,7 +83,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
                     onClick={() => onNavigate?.(View.MEETINGS)}
                     className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg transition-colors"
                   >
-                    <LogIn size={16} /> Meeting Finder
+                    <LogIn size={16} /> Find A Meeting
                   </button>
                   <button
                     onClick={() => onNavigate?.(View.JOURNAL)}

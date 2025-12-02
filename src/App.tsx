@@ -15,6 +15,7 @@ import { Dashboard } from './components/Dashboard';
 import { Journal } from './components/Journal';
 import { AICoach } from './components/AICoach';
 import { MeetingFinder } from './components/MeetingFinder';
+import { MeetingLog } from './components/MeetingLog';
 import { StepWorkComponent } from './components/StepWork';
 import { Badges } from './components/Badges';
 import { Readings } from './components/Readings';
@@ -153,19 +154,19 @@ const App: React.FC = () => {
     });
   };
 
-  const handleCheckIn = () => {
+  const handleCheckIn = (location: string) => {
     const now = new Date();
     setMeetingLogs((prev) => [
-      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-In' },
+      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-In', location },
       ...prev,
     ]);
     updateStreakOnCheckIn(now);
   };
 
-  const handleCheckOut = () => {
+  const handleCheckOut = (location: string) => {
     const now = new Date();
     setMeetingLogs((prev) => [
-      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-Out' },
+      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-Out', location },
       ...prev,
     ]);
   };
@@ -222,7 +223,9 @@ const App: React.FC = () => {
       case View.AI_COACH:
         return <AICoach />;
       case View.MEETINGS:
-        return <MeetingFinder logs={meetingLogs} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut} />;
+        return <MeetingFinder />;
+      case View.MEETING_LOG:
+        return <MeetingLog logs={meetingLogs} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut} />;
       case View.STEPWORK:
         return (
           <StepWorkComponent
@@ -238,7 +241,7 @@ const App: React.FC = () => {
       case View.READINGS:
         return <Readings />;
       case View.CONTACTS:
-        return <PhoneBook contacts={contacts} onSave={saveContact} onDelete={deleteContact} />;
+        return <PhoneBook contacts={contacts} onSave={saveContact} onDelete={deleteContact} emergencyContact={user.emergencyContact} />;
       case View.MY_ACCOUNT:
         return (
           <MyAccount
@@ -298,22 +301,20 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-penda-bg via-penda-tan to-white text-penda-text">
-      <div className="min-h-screen bg-penda-bg text-penda-text">
-        <div className="flex flex-col md:flex-row min-h-screen">
-          <Sidebar
-            currentView={currentView}
-            setView={setCurrentView}
-            isMobile={false}
-            isLoggedIn={user.isLoggedIn}
-            shareApp={shareApp}
-          />
-          <div className="flex-1 flex flex-col">
-            <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
-            <footer className="border-t border-penda-border bg-white text-xs text-penda-light text-center py-3">
-              © My Recovery Buddy by Penda Lane Behavioral Health — All rights reserved.
-            </footer>
-          </div>
+    <div className="min-h-screen bg-penda-bg text-penda-text">
+      <div className="flex flex-col md:flex-row min-h-screen">
+        <Sidebar
+          currentView={currentView}
+          setView={setCurrentView}
+          isMobile={false}
+          isLoggedIn={user.isLoggedIn}
+          shareApp={shareApp}
+        />
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+          <footer className="border-t border-penda-border bg-white text-xs text-penda-light text-center py-3">
+            © My Recovery Buddy by Penda Lane Behavioral Health — All rights reserved.
+          </footer>
         </div>
       </div>
     </div>

@@ -1,19 +1,20 @@
 import React from 'react';
 import { View } from '../types';
 const heroLogoSrc = 'https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png';
-import { 
-  LayoutDashboard, 
-  BookHeart, 
-  BotMessageSquare, 
-  MapPin, 
-  Phone, 
+import {
+  LayoutDashboard,
+  BookHeart,
+  BotMessageSquare,
+  MapPin,
+  Phone,
   AlertCircle,
   FileText,
   Award,
   BookOpen,
   LogOut,
   Share2,
-  UserRound
+  UserRound,
+  Clock3
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,14 +28,15 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile, isLoggedIn, shareApp }) => {
   const menuItems = [
     { id: View.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
-    { id: View.MEETINGS, label: 'Meeting Finder', icon: MapPin },
-    { id: View.STEPWORK, label: 'My Stepwork', icon: FileText },
-    { id: View.AI_COACH, label: 'AI Companion', icon: BotMessageSquare },
+    { id: View.MEETINGS, label: 'Find A Meeting', icon: MapPin },
+    { id: View.MEETING_LOG, label: 'Meeting Log', icon: Clock3 },
+    { id: View.STEPWORK, label: 'Step Work', icon: FileText },
     { id: View.JOURNAL, label: 'Journal', icon: BookHeart },
-    { id: View.FIND_TREATMENT, label: 'Find Treatment (AI)', icon: FileText },
-    { id: View.BADGES, label: 'Badges & Streaks', icon: Award },
-    { id: View.READINGS, label: 'Daily Readings', icon: BookOpen },
     { id: View.CONTACTS, label: 'Phone Book', icon: Phone },
+    { id: View.READINGS, label: 'Daily Readings', icon: BookOpen },
+    { id: View.AI_COACH, label: 'AI Companion', icon: BotMessageSquare },
+    { id: View.BADGES, label: 'Badges & Streaks', icon: Award },
+    { id: View.FIND_TREATMENT, label: 'Find Treatment', icon: FileText },
   ];
 
   const baseClass = isMobile
@@ -51,6 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
             <img src={heroLogoSrc} alt="Penda Lane Behavioral Health" className="w-full h-full object-contain" />
           </div>
           <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
+          <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
           <p className="text-[11px] text-penda-light">{heroTagline}</p>
         </div>
       )}
@@ -94,6 +97,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
           <span>My Account</span>
         </button>
 
+        {/* Help Button (Internal) */}
+        <button
+          onClick={() => setView(View.HELP)}
+          className={isMobile
+             ? "flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-lg text-[10px] whitespace-nowrap text-red-600 bg-red-50 border border-red-100"
+             : "flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-red-600 hover:bg-red-50 bg-white border border-transparent w-full text-left"}
+        >
+           <AlertCircle size={isMobile ? 18 : 20} />
+           <span>Help & Crisis</span>
+        </button>
+
         <button
             onClick={shareApp}
             className={isMobile
@@ -102,17 +116,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
         >
             <Share2 size={isMobile ? 18 : 20} />
             <span>Share App</span>
-        </button>
-
-        {/* Help Button (Internal) */}
-        <button
-          onClick={() => setView(View.HELP)}
-          className={isMobile
-             ? "flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-lg text-[10px] whitespace-nowrap text-red-600 bg-red-50 border border-red-100" 
-             : "flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-red-600 hover:bg-red-50 bg-white border border-transparent w-full text-left"}
-        >
-           <AlertCircle size={isMobile ? 18 : 20} />
-           <span>Help & Crisis</span>
         </button>
 
         {isLoggedIn && !isMobile && (
