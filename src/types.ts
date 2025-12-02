@@ -70,3 +70,4 @@ export enum View {
   BADGES = 'BADGES',
   READINGS = 'READINGS',
   HELP = 'HELP'
+}
