@@ -1,0 +1,176 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { Camera, Bell, ShieldCheck, UserRound } from 'lucide-react';
+import { UserProfile } from '../types';
+
+interface MyAccountProps {
+  user: UserProfile;
+  onUpdateProfile: (profile: UserProfile) => void;
+  stats: {
+    streakCount: number;
+    journalCount: number;
+    meetingCount: number;
+  };
+  notificationsEnabled: boolean;
+  onToggleNotifications: (enabled: boolean) => void;
+}
+
+export const MyAccount: React.FC<MyAccountProps> = ({
+  user,
+  onUpdateProfile,
+  stats,
+  notificationsEnabled,
+  onToggleNotifications,
+}) => {
+  const [formState, setFormState] = useState(user);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setFormState(user);
+  }, [user]);
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormState((prev) => ({ ...prev, avatar: reader.result as string }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const updateField = (key: keyof UserProfile, value: string) => {
+    setFormState((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSave = () => {
+    onUpdateProfile(formState);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white border border-penda-border rounded-soft shadow-sm p-6">
+        <div className="flex items-center gap-4">
+          <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-penda-purple shadow-md">
+            <img src={formState.avatar} alt="Profile" className="w-full h-full object-cover" />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-1 right-1 bg-penda-purple text-white rounded-full p-2 shadow-lg"
+              aria-label="Upload profile picture"
+            >
+              <Camera size={16} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+          </div>
+          <div>
+            <p className="text-sm uppercase tracking-[0.25em] text-penda-light">My Account</p>
+            <h2 className="text-2xl font-bold text-penda-purple">{formState.displayName}</h2>
+            <p className="text-sm text-penda-text/80">By Penda Lane Behavioral Health</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-xs font-semibold text-penda-text">Display Name</span>
+              <input
+                value={formState.displayName}
+                onChange={(e) => updateField('displayName', e.target.value)}
+                className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple focus:ring-2 focus:ring-penda-light"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold text-penda-text">Homegroup</span>
+              <input
+                value={formState.homegroup || ''}
+                onChange={(e) => updateField('homegroup', e.target.value)}
+                placeholder="e.g., Tuesday Night Big Book"
+                className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple focus:ring-2 focus:ring-penda-light"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold text-penda-text">Service Position</span>
+              <input
+                value={formState.servicePosition || ''}
+                onChange={(e) => updateField('servicePosition', e.target.value)}
+                placeholder="GSR, Treasurer, Chair, etc."
+                className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple focus:ring-2 focus:ring-penda-light"
+              />
+            </label>
+          </div>
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-xs font-semibold text-penda-text">Email</span>
+              <input
+                type="email"
+                value={formState.email}
+                onChange={(e) => updateField('email', e.target.value)}
+                className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple focus:ring-2 focus:ring-penda-light"
+              />
+            </label>
+            <div className="flex items-center justify-between p-3 rounded-firm border border-penda-border bg-penda-bg">
+              <div>
+                <p className="text-sm font-semibold text-penda-text">Enable Notifications</p>
+                <p className="text-xs text-penda-text/70">Receive reminders and safety alerts for all features.</p>
+              </div>
+              <button
+                onClick={() => onToggleNotifications(!notificationsEnabled)}
+                className={`w-14 h-8 flex items-center rounded-full px-1 transition-colors ${
+                  notificationsEnabled ? 'bg-penda-purple' : 'bg-penda-border'
+                }`}
+                aria-label="Toggle notifications"
+              >
+                <span
+                  className={`h-6 w-6 rounded-full bg-white shadow transform transition-transform ${
+                    notificationsEnabled ? 'translate-x-6' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+            <button
+              onClick={handleSave}
+              className="w-full inline-flex items-center justify-center gap-2 bg-penda-purple text-white font-semibold py-3 rounded-firm shadow-md hover:shadow-lg transition-all"
+            >
+              <ShieldCheck size={18} /> Save Profile
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[{
+          label: 'Check-in Streak',
+          value: `${stats.streakCount} days`,
+          icon: <ShieldCheck size={22} />
+        }, {
+          label: 'Journal Entries',
+          value: stats.journalCount,
+          icon: <UserRound size={22} />
+        }, {
+          label: 'Meeting Logs',
+          value: stats.meetingCount,
+          icon: <Bell size={22} />
+        }].map((item) => (
+          <div
+            key={item.label}
+            className="bg-white border border-penda-border rounded-soft p-4 shadow-sm flex items-center gap-3"
+          >
+            <div className="w-11 h-11 rounded-full bg-penda-soft flex items-center justify-center text-penda-purple">
+              {item.icon}
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-penda-text/70">{item.label}</p>
+              <p className="text-lg font-bold text-penda-purple">{item.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

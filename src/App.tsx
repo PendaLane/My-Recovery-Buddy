@@ -19,6 +19,7 @@ import { StepWorkComponent } from './components/StepWork';
 import { Badges } from './components/Badges';
 import { Readings } from './components/Readings';
 import { PhoneBook } from './components/PhoneBook';
+import { MyAccount } from './components/MyAccount';
 
 const loadFromStorage = <T,>(key: string, fallback: T): T => {
   if (typeof localStorage === 'undefined') return fallback;
@@ -45,6 +46,8 @@ const defaultUser: UserProfile = {
   displayName: 'Guest',
   email: 'guest@example.com',
   avatar: 'https://i.pravatar.cc/100?img=65',
+  homegroup: '',
+  servicePosition: '',
   isLoggedIn: false,
 };
 
@@ -55,7 +58,7 @@ const sampleBadges: Badge[] = [
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
-  const [user] = useState<UserProfile>(defaultUser);
+  const [user, setUser] = useState<UserProfile>(() => loadFromStorage<UserProfile>('userProfile', defaultUser));
   const [sobrietyDate, setSobrietyDate] = useState<string | null>(() => loadFromStorage('sobrietyDate', null));
   const [journals, setJournals] = useState<JournalEntry[]>(() =>
     loadFromStorage<JournalEntry[]>('journalEntries', [])
@@ -70,6 +73,13 @@ const App: React.FC = () => {
   const [stepWorkList, setStepWorkList] = useState<StepWork[]>(() =>
     loadFromStorage<StepWork[]>('stepWork', [])
   );
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() =>
+    loadFromStorage<boolean>('notificationsEnabled', true)
+  );
+
+  useEffect(() => {
+    persistToStorage('userProfile', user);
+  }, [user]);
 
   useEffect(() => {
     persistToStorage('sobrietyDate', sobrietyDate);
@@ -94,6 +104,10 @@ const App: React.FC = () => {
   useEffect(() => {
     persistToStorage('stepWork', stepWorkList);
   }, [stepWorkList]);
+
+  useEffect(() => {
+    persistToStorage('notificationsEnabled', notificationsEnabled);
+  }, [notificationsEnabled]);
 
   const addJournalEntry = (entry: JournalEntry) => {
     setJournals((prev) => [...prev, entry]);
@@ -170,6 +184,10 @@ const App: React.FC = () => {
 
   const streakCount = useMemo(() => streak.current, [streak]);
 
+  const handleProfileUpdate = (profile: UserProfile) => {
+    setUser(profile);
+  };
+
   const renderView = () => {
     switch (currentView) {
       case View.JOURNAL:
@@ -192,6 +210,16 @@ const App: React.FC = () => {
         return <Readings />;
       case View.CONTACTS:
         return <PhoneBook contacts={contacts} onSave={saveContact} onDelete={deleteContact} />;
+      case View.MY_ACCOUNT:
+        return (
+          <MyAccount
+            user={user}
+            onUpdateProfile={handleProfileUpdate}
+            stats={{ streakCount, journalCount: journals.length, meetingCount: meetingLogs.length }}
+            notificationsEnabled={notificationsEnabled}
+            onToggleNotifications={setNotificationsEnabled}
+          />
+        );
       case View.HELP:
         return (
           <div className="space-y-4">
@@ -222,16 +250,17 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-penda-bg via-penda-tan to-white text-penda-text">
-    <div className="min-h-screen bg-penda-bg text-penda-text">
-      <div className="flex flex-col md:flex-row min-h-screen">
-        <Sidebar
-          currentView={currentView}
-          setView={setCurrentView}
-          isMobile={false}
-          isLoggedIn={user.isLoggedIn}
-          shareApp={shareApp}
-        />
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+      <div className="min-h-screen bg-penda-bg text-penda-text">
+        <div className="flex flex-col md:flex-row min-h-screen">
+          <Sidebar
+            currentView={currentView}
+            setView={setCurrentView}
+            isMobile={false}
+            isLoggedIn={user.isLoggedIn}
+            shareApp={shareApp}
+          />
+          <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ export interface UserProfile {
   displayName: string;
   email: string;
   avatar: string;
+  homegroup?: string;
+  servicePosition?: string;
   isLoggedIn: boolean;
 }
 
@@ -69,5 +71,6 @@ export enum View {
   CONTACTS = 'CONTACTS',
   BADGES = 'BADGES',
   READINGS = 'READINGS',
-  HELP = 'HELP'
+  HELP = 'HELP',
+  MY_ACCOUNT = 'MY_ACCOUNT'
 }
