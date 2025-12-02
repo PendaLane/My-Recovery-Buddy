@@ -62,12 +62,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
           <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
           <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
           <p className="text-[11px] text-penda-light">Compassionate support for every step.</p>
-        <div className="mb-8 px-2 flex flex-col items-center text-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-penda-purple to-penda-light text-white flex items-center justify-center text-2xl font-bold mb-3 shadow-inner">
-              RB
-            </div>
-            <h1 className="font-bold text-penda-purple text-lg leading-tight">Recovery Buddy</h1>
-            <p className="text-xs text-penda-light mt-1">Your companion for daily recovery habits.</p>
         </div>
       )}
       
