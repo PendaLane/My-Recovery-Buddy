@@ -8,7 +8,7 @@ interface PhoneBookProps {
   onDelete: (id: string) => void;
 }
 
-const roleOptions: Contact['role'][] = ['Sponsor', 'Peer', 'Therapist', 'Family'];
+const roleOptions: Contact['role'][] = ['Sponsor', 'Peer Support', 'Therapist', 'Family'];
 const fellowshipOptions: Contact['fellowship'][] = ['AA', 'NA', 'CA', 'Other'];
 
 export const PhoneBook: React.FC<PhoneBookProps> = ({ contacts, onSave, onDelete }) => {
@@ -36,7 +36,7 @@ export const PhoneBook: React.FC<PhoneBookProps> = ({ contacts, onSave, onDelete
       <header>
         <h2 className="text-2xl font-bold text-penda-purple">Trusted Phone Book</h2>
         <p className="text-sm text-penda-light">
-          Keep your sponsors, peers, and providers handy. Saved locally on this device only.
+          Keep your sponsor, peers, and providers handy. Saved locally on this device only.
         </p>
       </header>
 

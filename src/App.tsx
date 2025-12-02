@@ -20,6 +20,8 @@ import { Badges } from './components/Badges';
 import { Readings } from './components/Readings';
 import { PhoneBook } from './components/PhoneBook';
 import { MyAccount } from './components/MyAccount';
+import { FindTreatment } from './components/FindTreatment';
+import { SignUp } from './components/SignUp';
 
 const loadFromStorage = <T,>(key: string, fallback: T): T => {
   if (typeof localStorage === 'undefined') return fallback;
@@ -48,6 +50,9 @@ const defaultUser: UserProfile = {
   avatar: 'https://i.pravatar.cc/100?img=65',
   homegroup: '',
   servicePosition: '',
+  state: '',
+  emergencyContact: undefined,
+  joinedAt: undefined,
   isLoggedIn: false,
 };
 
@@ -167,8 +172,8 @@ const App: React.FC = () => {
 
   const shareApp = () => {
     const shareData = {
-      title: 'Recovery Buddy',
-      text: 'Check out Recovery Buddy — a supportive companion for your sobriety journey.',
+      title: 'My Recovery Buddy',
+      text: 'Check out My Recovery Buddy — a supportive companion for your sobriety journey.',
       url: window.location.origin,
     };
 
@@ -188,6 +193,28 @@ const App: React.FC = () => {
     setUser(profile);
   };
 
+  const handleSignInOut = () => {
+    setUser((prev) => ({
+      ...prev,
+      isLoggedIn: !prev.isLoggedIn,
+      joinedAt: prev.joinedAt || new Date().toISOString(),
+    }));
+  };
+
+  const handleCreateAccount = () => {
+    setCurrentView(View.SIGN_UP);
+  };
+
+  const handleSignUpSubmit = (profile: Partial<UserProfile>) => {
+    setUser((prev) => ({
+      ...prev,
+      ...profile,
+      id: prev.id === 'guest' ? `user-${Date.now()}` : prev.id,
+      isLoggedIn: true,
+    }));
+    setCurrentView(View.MY_ACCOUNT);
+  };
+
   const renderView = () => {
     switch (currentView) {
       case View.JOURNAL:
@@ -204,6 +231,8 @@ const App: React.FC = () => {
             deleteStepWork={deleteStepWork}
           />
         );
+      case View.FIND_TREATMENT:
+        return <FindTreatment />;
       case View.BADGES:
         return <Badges badges={sampleBadges} streak={streak} />;
       case View.READINGS:
@@ -220,6 +249,8 @@ const App: React.FC = () => {
             onToggleNotifications={setNotificationsEnabled}
           />
         );
+      case View.SIGN_UP:
+        return <SignUp user={user} onSubmit={handleSignUpSubmit} />;
       case View.HELP:
         return (
           <div className="space-y-4">
@@ -227,10 +258,26 @@ const App: React.FC = () => {
             <p className="text-sm text-penda-light">
               If you are in immediate danger or feel unsafe, please call your local emergency number right away.
             </p>
-            <div className="bg-white p-4 rounded-soft border border-penda-border space-y-2">
-              <p className="text-sm text-penda-text">SAMHSA National Helpline (USA): 1-800-662-4357</p>
-              <p className="text-sm text-penda-text">988 Suicide & Crisis Lifeline: Dial or text 988</p>
-              <p className="text-sm text-penda-text">Emergency Services: 911</p>
+            <div className="bg-white p-4 rounded-soft border border-penda-border space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <a href="tel:988" className="flex items-center justify-center gap-2 bg-red-600 text-white px-3 py-3 rounded-firm font-semibold shadow-md hover:bg-red-700">
+                  Call 988
+                </a>
+                <a href="sms:988" className="flex items-center justify-center gap-2 bg-white text-red-700 border border-red-200 px-3 py-3 rounded-firm font-semibold shadow-sm hover:bg-red-50">
+                  Text 988
+                </a>
+                <a href="https://988lifeline.org/chat/" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-white text-red-700 border border-red-200 px-3 py-3 rounded-firm font-semibold shadow-sm hover:bg-red-50">
+                  Chat Online
+                </a>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <a href="tel:18006624357" className="flex items-center justify-center gap-2 bg-penda-purple text-white px-3 py-3 rounded-firm font-semibold shadow-md hover:bg-penda-light">
+                  SAMHSA Helpline 1-800-662-4357
+                </a>
+                <a href="tel:911" className="flex items-center justify-center gap-2 bg-penda-tan text-penda-purple px-3 py-3 rounded-firm font-semibold shadow-sm border border-penda-border">
+                  Emergency Services (911)
+                </a>
+              </div>
             </div>
           </div>
         );
@@ -243,6 +290,8 @@ const App: React.FC = () => {
             streakCount={streakCount}
             user={user}
             onNavigate={setCurrentView}
+            onCreateAccount={handleCreateAccount}
+            onToggleAuth={handleSignInOut}
           />
         );
     }
@@ -259,7 +308,12 @@ const App: React.FC = () => {
             isLoggedIn={user.isLoggedIn}
             shareApp={shareApp}
           />
-          <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+          <div className="flex-1 flex flex-col">
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+            <footer className="border-t border-penda-border bg-white text-xs text-penda-light text-center py-3">
+              © My Recovery Buddy by Penda Lane Behavioral Health — All rights reserved.
+            </footer>
+          </div>
         </div>
       </div>
     </div>

@@ -24,6 +24,10 @@ export const MyAccount: React.FC<MyAccountProps> = ({
   const [formState, setFormState] = useState(user);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  const memberSince = formState.joinedAt
+    ? new Date(formState.joinedAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })
+    : '—';
+
   useEffect(() => {
     setFormState(user);
   }, [user]);
@@ -44,7 +48,10 @@ export const MyAccount: React.FC<MyAccountProps> = ({
   };
 
   const handleSave = () => {
-    onUpdateProfile(formState);
+    onUpdateProfile({
+      ...formState,
+      joinedAt: formState.joinedAt || new Date().toISOString(),
+    });
   };
 
   return (
@@ -71,7 +78,7 @@ export const MyAccount: React.FC<MyAccountProps> = ({
           <div>
             <p className="text-sm uppercase tracking-[0.25em] text-penda-light">My Account</p>
             <h2 className="text-2xl font-bold text-penda-purple">{formState.displayName}</h2>
-            <p className="text-sm text-penda-text/80">By Penda Lane Behavioral Health</p>
+            <p className="text-sm text-penda-text/80">Member since {memberSince}</p>
           </div>
         </div>
 
@@ -100,6 +107,15 @@ export const MyAccount: React.FC<MyAccountProps> = ({
                 value={formState.servicePosition || ''}
                 onChange={(e) => updateField('servicePosition', e.target.value)}
                 placeholder="GSR, Treasurer, Chair, etc."
+                className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple focus:ring-2 focus:ring-penda-light"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold text-penda-text">State</span>
+              <input
+                value={formState.state || ''}
+                onChange={(e) => updateField('state', e.target.value)}
+                placeholder="e.g., California"
                 className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple focus:ring-2 focus:ring-penda-light"
               />
             </label>
@@ -139,6 +155,47 @@ export const MyAccount: React.FC<MyAccountProps> = ({
             >
               <ShieldCheck size={18} /> Save Profile
             </button>
+          </div>
+        </div>
+
+        <div className="mt-6 border border-dashed border-penda-border rounded-soft p-4 bg-penda-bg/60">
+          <p className="text-sm font-semibold text-penda-purple mb-2">Emergency Contact</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <label className="block text-sm text-penda-text">
+              Name
+              <input
+                value={formState.emergencyContact?.name || ''}
+                onChange={(e) => setFormState((prev) => ({
+                  ...prev,
+                  emergencyContact: { ...(prev.emergencyContact || { relation: '' }), name: e.target.value },
+                }))}
+                className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple"
+              />
+            </label>
+            <label className="block text-sm text-penda-text">
+              Relationship
+              <input
+                value={formState.emergencyContact?.relation || ''}
+                onChange={(e) => setFormState((prev) => ({
+                  ...prev,
+                  emergencyContact: { ...(prev.emergencyContact || { name: '', phone: '' }), relation: e.target.value },
+                }))}
+                className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple"
+                placeholder="Friend, sponsor, family"
+              />
+            </label>
+            <label className="block text-sm text-penda-text">
+              Phone
+              <input
+                value={formState.emergencyContact?.phone || ''}
+                onChange={(e) => setFormState((prev) => ({
+                  ...prev,
+                  emergencyContact: { ...(prev.emergencyContact || { name: '', relation: '' }), phone: e.target.value },
+                }))}
+                className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple"
+                placeholder="555-123-4567"
+              />
+            </label>
           </div>
         </div>
       </div>

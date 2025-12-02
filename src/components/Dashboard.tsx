@@ -10,9 +10,11 @@ interface DashboardProps {
   streakCount: number;
   user: UserProfile | null;
   onNavigate?: (view: View) => void;
+  onCreateAccount?: () => void;
+  onToggleAuth?: () => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user, onNavigate }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user, onNavigate, onCreateAccount, onToggleAuth }) => {
   const [daysSober, setDaysSober] = useState(0);
 
   useEffect(() => {
@@ -42,11 +44,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <header className="mb-4">
-        <h2 className="text-2xl font-bold text-penda-purple">
-          {user?.isLoggedIn ? `Welcome, ${user.displayName}` : "Welcome to Recovery Buddy"}
-        </h2>
-        <p className="text-penda-light text-sm">Meetings. Sponsors. Support. In your pocket.</p>
+      <header className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-penda-purple">
+            {user?.isLoggedIn ? `Welcome, ${user.displayName}` : "Welcome to My Recovery Buddy"}
+          </h2>
+          <p className="text-penda-light text-sm">Meetings. Sponsor. Support. In your pocket.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => onCreateAccount?.()}
+            className="bg-white text-penda-purple border border-penda-purple px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-bg"
+          >
+            Create Account
+          </button>
+          <button
+            onClick={() => onToggleAuth?.()}
+            className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-light"
+          >
+            {user?.isLoggedIn ? 'Sign Out' : 'Sign In'}
+          </button>
+        </div>
       </header>
 
       {/* Sobriety Counter Card */}
