@@ -3,6 +3,15 @@ export interface UserProfile {
   displayName: string;
   email: string;
   avatar: string;
+  homegroup?: string;
+  servicePosition?: string;
+  state?: string;
+  emergencyContact?: {
+    name: string;
+    phone: string;
+    relation?: string;
+  };
+  joinedAt?: string;
   isLoggedIn: boolean;
 }
 
@@ -18,7 +27,7 @@ export interface JournalEntry {
 export interface Contact {
   id: string;
   name: string;
-  role: 'Sponsor' | 'Peer' | 'Therapist' | 'Family';
+  role: 'Sponsor' | 'Peer Support' | 'Therapist' | 'Family';
   phone: string;
   fellowship: 'AA' | 'NA' | 'CA' | 'Other';
 }
@@ -69,5 +78,8 @@ export enum View {
   CONTACTS = 'CONTACTS',
   BADGES = 'BADGES',
   READINGS = 'READINGS',
-  HELP = 'HELP'
+  FIND_TREATMENT = 'FIND_TREATMENT',
+  HELP = 'HELP',
+  SIGN_UP = 'SIGN_UP',
+  MY_ACCOUNT = 'MY_ACCOUNT'
 }

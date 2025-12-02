@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from '../types';
-import Logo from '../assets/penda-logo.svg';
+const heroLogoSrc = 'https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png';
 import { 
   LayoutDashboard, 
   BookHeart, 
@@ -12,7 +12,8 @@ import {
   Award,
   BookOpen,
   LogOut,
-  Share2
+  Share2,
+  UserRound
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,14 +25,13 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile, isLoggedIn, shareApp }) => {
-  const wpBaseUrl = 'https://pendalane.com';
-
   const menuItems = [
     { id: View.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
     { id: View.MEETINGS, label: 'Meeting Finder', icon: MapPin },
+    { id: View.STEPWORK, label: 'My Stepwork', icon: FileText },
     { id: View.AI_COACH, label: 'AI Companion', icon: BotMessageSquare },
     { id: View.JOURNAL, label: 'Journal', icon: BookHeart },
-    { id: View.STEPWORK, label: 'My Stepwork', icon: FileText },
+    { id: View.FIND_TREATMENT, label: 'Find Treatment (AI)', icon: FileText },
     { id: View.BADGES, label: 'Badges & Streaks', icon: Award },
     { id: View.READINGS, label: 'Daily Readings', icon: BookOpen },
     { id: View.CONTACTS, label: 'Phone Book', icon: Phone },
@@ -41,33 +41,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
     ? "fixed bottom-0 left-0 w-full bg-white border-t border-penda-border flex overflow-x-auto p-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] gap-2"
     : "w-72 bg-penda-bg border-r border-penda-border/80 flex flex-col p-5 h-full shadow-lg shrink-0 overflow-y-auto";
 
+  const heroTagline = "Meetings. Sponsor. Support. In your pocket.";
+
   return (
     <nav className={baseClass}>
       {!isMobile && (
-        <div className="mb-8 px-2 flex flex-col items-center text-center gap-1">
+        <div className="mb-8 px-2 flex flex-col items-center text-center gap-2">
           <div className="w-24 h-24 rounded-[28px] bg-white border-2 border-penda-border shadow-lg flex items-center justify-center overflow-hidden">
-            <img src={Logo} alt="Penda Lane" className="w-full h-full object-contain" />
+            <img src={heroLogoSrc} alt="Penda Lane Behavioral Health" className="w-full h-full object-contain" />
           </div>
-          <div className="text-[11px] uppercase tracking-[0.35em] text-penda-purple mt-2">Penda Lane</div>
           <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
-          <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
-          <p className="text-[11px] text-penda-light">Compassionate support for every step.</p>
-          <div className="w-24 h-24 rounded-full bg-white border-2 border-penda-purple shadow-lg flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-penda-light/50 via-penda-tan to-white" />
-            <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-penda-purple to-penda-light text-white flex items-center justify-center text-2xl font-extrabold tracking-tight shadow-inner">
-              PL
-            </div>
-          </div>
-          <div className="text-[11px] uppercase tracking-[0.35em] text-penda-purple mt-1">Penda Lane</div>
-          <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
-          <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
-          <p className="text-[11px] text-penda-light">Compassionate support for every step.</p>
-        <div className="mb-8 px-2 flex flex-col items-center text-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-penda-purple to-penda-light text-white flex items-center justify-center text-2xl font-bold mb-3 shadow-inner">
-              RB
-            </div>
-            <h1 className="font-bold text-penda-purple text-lg leading-tight">Recovery Buddy</h1>
-            <p className="text-xs text-penda-light mt-1">Your companion for daily recovery habits.</p>
+          <p className="text-[11px] text-penda-light">{heroTagline}</p>
         </div>
       )}
       
@@ -100,6 +84,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
 
       {/* App utilities */}
       <div className={isMobile ? "flex gap-2" : "mt-4 pt-4 border-t border-penda-border/50"}>
+        <button
+          onClick={() => setView(View.MY_ACCOUNT)}
+          className={isMobile
+             ? "flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-lg text-[10px] whitespace-nowrap text-penda-purple bg-white border border-penda-border"
+             : "flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-penda-purple hover:bg-white bg-white border border-transparent w-full text-left"}
+        >
+          <UserRound size={isMobile ? 18 : 20} />
+          <span>My Account</span>
+        </button>
+
         <button
             onClick={shareApp}
             className={isMobile
