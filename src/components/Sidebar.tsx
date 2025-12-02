@@ -24,6 +24,8 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile, isLoggedIn, shareApp }) => {
+  const wpBaseUrl = 'https://pendalane.com';
+
   const menuItems = [
     { id: View.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
     { id: View.MEETINGS, label: 'Meeting Finder', icon: MapPin },
@@ -37,17 +39,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
 
   // Items that link to actual WP pages
   const externalItems = [
-    { 
-      label: 'My Membership', 
-      icon: UserCog, 
-      href: '/membership-account/',
-      visible: isLoggedIn 
+    {
+      label: 'My Membership',
+      icon: UserCog,
+      href: `${wpBaseUrl}/membership-account/`,
+      visible: isLoggedIn
     },
-    { 
-      label: 'Join / Levels', 
-      icon: UserCog, 
-      href: '/membership-levels/',
-      visible: !isLoggedIn 
+    {
+      label: 'Join / Levels',
+      icon: UserCog,
+      href: `${wpBaseUrl}/membership-levels/`,
+      visible: !isLoggedIn
     },
   ];
 
