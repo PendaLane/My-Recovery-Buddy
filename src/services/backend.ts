@@ -26,8 +26,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- TYPES FOR WORDPRESS STATE ---
-export interface WPState {
+// --- TYPES FOR LOCAL APP STATE ---
+export interface AppState {
   logs: MeetingLog[];
   contacts: Contact[];
   sponsors: StepWork[];
@@ -38,49 +38,21 @@ export interface WPState {
   chatCount: number;
 }
 
-// --- WORDPRESS & AUTH SERVICE ---
+// --- AUTH SERVICE ---
 
 export const getCurrentUser = async (): Promise<UserProfile> => {
-  // Check if we are in a WP environment by looking for the body class
-  const isWpLoggedIn = document.body.classList.contains("logged-in");
-  
-  if (!isWpLoggedIn) {
-    return {
-      id: 'guest',
-      displayName: 'Guest',
-      email: '',
-      avatar: 'https://secure.gravatar.com/avatar/?s=96&d=mm&r=g',
-      isLoggedIn: false
-    };
-  }
-
-  try {
-    const res = await fetch("/wp-json/wp/v2/users/me", { credentials: "include" });
-    if (!res.ok) throw new Error("Not logged in");
-    const user = await res.json();
-    
-    return {
-      id: String(user.id || "wp"),
-      displayName: user.name || user.username || "Member",
-      email: user.email || "",
-      avatar: (user.avatar_urls && user.avatar_urls["96"]) ? user.avatar_urls["96"] : "https://secure.gravatar.com/avatar/?s=96&d=mm&r=g",
-      isLoggedIn: true
-    };
-  } catch (e) {
-    console.warn("WP User fetch failed, defaulting to guest", e);
-    return {
-      id: 'guest',
-      displayName: 'Guest',
-      email: '',
-      avatar: 'https://secure.gravatar.com/avatar/?s=96&d=mm&r=g',
-      isLoggedIn: false
-    };
-  }
+  return {
+    id: 'guest',
+    displayName: 'Guest',
+    email: '',
+    avatar: 'https://secure.gravatar.com/avatar/?s=96&d=mm&r=g',
+    isLoggedIn: false
+  };
 };
 
 // --- DATA SYNC SERVICE ---
 
-const DEFAULT_STATE: WPState = {
+const DEFAULT_STATE: AppState = {
   logs: [],
   contacts: [],
   sponsors: [],
@@ -91,43 +63,13 @@ const DEFAULT_STATE: WPState = {
   chatCount: 0
 };
 
-export const loadState = async (isLoggedIn: boolean): Promise<WPState> => {
-  if (!isLoggedIn) {
-    // Attempt to load from localStorage as fallback
-    const local = localStorage.getItem('mrb_local_state');
-    return local ? { ...DEFAULT_STATE, ...JSON.parse(local) } : DEFAULT_STATE;
-  }
-
-  try {
-    const res = await fetch("/wp-json/mrb/v1/state", { credentials: "include" });
-    if (res.ok) {
-      const data = await res.json();
-      return { ...DEFAULT_STATE, ...data };
-    }
-    throw new Error("API Error");
-  } catch (e) {
-    console.warn("Error loading MRB state from WP, falling back to local", e);
-    const local = localStorage.getItem('mrb_local_state');
-    return local ? { ...DEFAULT_STATE, ...JSON.parse(local) } : DEFAULT_STATE;
-  }
+export const loadState = async (): Promise<AppState> => {
+  const local = localStorage.getItem('mrb_local_state');
+  return local ? { ...DEFAULT_STATE, ...JSON.parse(local) } : DEFAULT_STATE;
 };
 
-export const saveState = async (state: WPState, isLoggedIn: boolean): Promise<void> => {
-  // Always save locally as backup
+export const saveState = async (state: AppState): Promise<void> => {
   localStorage.setItem('mrb_local_state', JSON.stringify(state));
-
-  if (!isLoggedIn) return;
-
-  try {
-    await fetch("/wp-json/mrb/v1/state", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(state)
-    });
-  } catch (e) {
-    console.error("Error saving MRB state to WP", e);
-  }
 };
 
 // --- FIREBASE JOURNAL SERVICE ---

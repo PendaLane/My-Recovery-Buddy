@@ -1,149 +1,221 @@
-import React, { useState, useEffect } from 'react';
-import { JournalEntry, UserProfile } from '../types';
-import { Award, TrendingUp, ShieldCheck, LogIn, UserPlus } from 'lucide-react';
-import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useEffect, useMemo, useState } from 'react';
+import './index.css';
+import {
+  Badge,
+  JournalEntry,
+  MeetingLog,
+  StepWork,
+  Streak,
+  UserProfile,
+  View
+} from './types';
+import { Sidebar } from './components/Sidebar';
+import { Dashboard } from './components/Dashboard';
+import { Journal } from './components/Journal';
+import { AICoach } from './components/AICoach';
+import { MeetingFinder } from './components/MeetingFinder';
+import { StepWorkComponent } from './components/StepWork';
+import { Badges } from './components/Badges';
+import { Readings } from './components/Readings';
 
-interface DashboardProps {
-  sobrietyDate: string | null;
-  setSobrietyDate: (date: string | null) => void;
-  journals: JournalEntry[];
-  streakCount: number;
-  user: UserProfile | null;
-}
+const loadFromStorage = <T,>(key: string, fallback: T): T => {
+  if (typeof localStorage === 'undefined') return fallback;
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? (JSON.parse(stored) as T) : fallback;
+  } catch (err) {
+    console.warn(`Failed to read ${key} from storage`, err);
+    return fallback;
+  }
+};
 
-export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user }) => {
-  const [daysSober, setDaysSober] = useState(0);
+const persistToStorage = <T,>(key: string, value: T) => {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (err) {
+    console.warn(`Failed to save ${key} to storage`, err);
+  }
+};
+
+const defaultUser: UserProfile = {
+  id: 'guest',
+  displayName: 'Guest',
+  email: 'guest@example.com',
+  avatar: 'https://i.pravatar.cc/100?img=65',
+  isLoggedIn: false,
+};
+
+const sampleBadges: Badge[] = [
+  { id: '1', key: 'first-journal', label: 'First Journal', earnedAt: '2024-01-10', icon: 'Award' },
+  { id: '2', key: 'first-checkin', label: 'First Check-in', earnedAt: '2024-01-12', icon: 'Check' },
+];
+
+const App: React.FC = () => {
+  const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
+  const [user] = useState<UserProfile>(defaultUser);
+  const [sobrietyDate, setSobrietyDate] = useState<string | null>(() => loadFromStorage('sobrietyDate', null));
+  const [journals, setJournals] = useState<JournalEntry[]>(() =>
+    loadFromStorage<JournalEntry[]>('journalEntries', [])
+  );
+  const [meetingLogs, setMeetingLogs] = useState<MeetingLog[]>(() =>
+    loadFromStorage<MeetingLog[]>('meetingLogs', [])
+  );
+  const [streak, setStreak] = useState<Streak>(() =>
+    loadFromStorage<Streak>('streak', { current: 0, longest: 0, lastCheckInDate: null })
+  );
+  const [stepWorkList, setStepWorkList] = useState<StepWork[]>(() =>
+    loadFromStorage<StepWork[]>('stepWork', [])
+  );
 
   useEffect(() => {
-    if (sobrietyDate) {
-      const start = new Date(sobrietyDate);
-      const now = new Date();
-      const diff = now.getTime() - start.getTime();
-      setDaysSober(Math.floor(diff / (1000 * 60 * 60 * 24)));
-    } else {
-      setDaysSober(0);
-    }
+    persistToStorage('sobrietyDate', sobrietyDate);
   }, [sobrietyDate]);
 
-  // Transform journal data for chart
-  const chartData = journals.slice(-7).map(j => {
-    let score = 3;
-    if (j.mood === 'Great') score = 5;
-    if (j.mood === 'Good') score = 4;
-    if (j.mood === 'Okay') score = 3;
-    if (j.mood === 'Struggling') score = 2;
-    if (j.mood === 'Crisis') score = 1;
-    return {
-      date: new Date(j.date).toLocaleDateString(undefined, { weekday: 'short' }),
-      score: score
+  useEffect(() => {
+    persistToStorage('journalEntries', journals);
+  }, [journals]);
+
+  useEffect(() => {
+    persistToStorage('meetingLogs', meetingLogs);
+  }, [meetingLogs]);
+
+  useEffect(() => {
+    persistToStorage('streak', streak);
+  }, [streak]);
+
+  useEffect(() => {
+    persistToStorage('stepWork', stepWorkList);
+  }, [stepWorkList]);
+
+  const addJournalEntry = (entry: JournalEntry) => {
+    setJournals((prev) => [...prev, entry]);
+  };
+
+  const saveStepWork = (work: StepWork) => {
+    setStepWorkList((prev) => [...prev, work]);
+  };
+
+  const deleteStepWork = (id: string) => {
+    setStepWorkList((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const updateStreakOnCheckIn = (timestamp: Date) => {
+    setStreak((prev) => {
+      const lastDate = prev.lastCheckInDate ? new Date(prev.lastCheckInDate) : null;
+      const isConsecutive =
+        lastDate &&
+        lastDate.getFullYear() === timestamp.getFullYear() &&
+        lastDate.getMonth() === timestamp.getMonth() &&
+        timestamp.getDate() - lastDate.getDate() === 1;
+
+      const current = isConsecutive ? prev.current + 1 : 1;
+      return {
+        current,
+        longest: Math.max(prev.longest, current),
+        lastCheckInDate: timestamp.toISOString(),
+      };
+    });
+  };
+
+  const handleCheckIn = () => {
+    const now = new Date();
+    setMeetingLogs((prev) => [
+      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-In' },
+      ...prev,
+    ]);
+    updateStreakOnCheckIn(now);
+  };
+
+  const handleCheckOut = () => {
+    const now = new Date();
+    setMeetingLogs((prev) => [
+      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-Out' },
+      ...prev,
+    ]);
+  };
+
+  const shareApp = () => {
+    const shareData = {
+      title: 'Recovery Buddy',
+      text: 'Check out Recovery Buddy — a supportive companion for your sobriety journey.',
+      url: window.location.origin,
     };
-  }).reverse();
 
-  return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <header className="mb-4">
-        <h2 className="text-2xl font-bold text-penda-purple">
-          {user?.isLoggedIn ? `Welcome, ${user.displayName}` : "Welcome to Recovery Buddy"}
-        </h2>
-        <p className="text-penda-light text-sm">Meetings. Sponsors. Support. In your pocket.</p>
-      </header>
+    if (navigator.share) {
+      navigator.share(shareData).catch((err) => console.warn('Share failed', err));
+    } else {
+      navigator.clipboard
+        .writeText(`${shareData.text} ${shareData.url}`)
+        .then(() => alert('Link copied to clipboard!'))
+        .catch(() => alert('Unable to share automatically. Copy the URL manually.'));
+    }
+  };
 
-      {/* Sobriety Counter Card */}
-      <div className="bg-gradient-to-r from-penda-purple to-penda-light rounded-soft p-6 text-white shadow-lg relative overflow-hidden border border-penda-purple">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-            <Award size={120} />
-        </div>
-        
-        {!sobrietyDate ? (
-          <div className="z-10 relative">
-            <h3 className="text-lg font-bold mb-3">Begin Your Journey</h3>
-            
-            {!user?.isLoggedIn && (
-               <div className="bg-white/10 p-4 rounded-firm border border-white/20 mb-4 backdrop-blur-sm">
-                  <p className="text-sm mb-3 font-medium">You are using the app as a Guest. Log in to sync your progress across devices.</p>
-                  <div className="flex gap-3">
-                    <a href="/login/" className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
-                        <LogIn size={16} /> Log In
-                    </a>
-                    <a href="/membership-levels/" className="flex-1 bg-penda-purple border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg hover:text-penda-purple transition-colors">
-                        <UserPlus size={16} /> Join Free
-                    </a>
-                  </div>
-               </div>
-            )}
+  const streakCount = useMemo(() => streak.current, [streak]);
 
-            <label className="block text-xs uppercase tracking-wide opacity-80 mb-1">Set Clean/Sober Date (Local Only)</label>
-            <input 
-              type="date" 
-              className="w-full p-2 rounded-firm text-penda-purple font-bold"
-              onChange={(e) => setSobrietyDate(e.target.value)}
-            />
-          </div>
-        ) : (
-          <div className="z-10 relative text-center py-2">
-            <div className="text-white/80 font-medium tracking-wider uppercase text-xs mb-1">Sobriety Streak</div>
-            <div className="text-5xl font-extrabold mb-1">{daysSober}</div>
-            <div className="text-lg text-white/90">Days Clean & Sober</div>
-            <div className="mt-4 flex gap-2 justify-center">
-               <button 
-                onClick={() => setSobrietyDate(null)} 
-                className="text-xs text-white/70 hover:text-white underline"
-              >
-                Reset Date
-              </button>
+  const renderView = () => {
+    switch (currentView) {
+      case View.JOURNAL:
+        return <Journal entries={journals} addEntry={addJournalEntry} user={user} />;
+      case View.AI_COACH:
+        return <AICoach />;
+      case View.MEETINGS:
+        return <MeetingFinder logs={meetingLogs} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut} />;
+      case View.STEPWORK:
+        return (
+          <StepWorkComponent
+            stepWorkList={stepWorkList}
+            saveStepWork={saveStepWork}
+            deleteStepWork={deleteStepWork}
+          />
+        );
+      case View.BADGES:
+        return <Badges badges={sampleBadges} streak={streak} />;
+      case View.READINGS:
+        return <Readings />;
+      case View.HELP:
+        return (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-penda-purple">Help & Crisis Support</h2>
+            <p className="text-sm text-penda-light">
+              If you are in immediate danger or feel unsafe, please call your local emergency number right away.
+            </p>
+            <div className="bg-white p-4 rounded-soft border border-penda-border space-y-2">
+              <p className="text-sm text-penda-text">SAMHSA National Helpline (USA): 1-800-662-4357</p>
+              <p className="text-sm text-penda-text">988 Suicide & Crisis Lifeline: Dial or text 988</p>
+              <p className="text-sm text-penda-text">Emergency Services: 911</p>
             </div>
           </div>
-        )}
-      </div>
+        );
+      default:
+        return (
+          <Dashboard
+            sobrietyDate={sobrietyDate}
+            setSobrietyDate={setSobrietyDate}
+            journals={journals}
+            streakCount={streakCount}
+            user={user}
+            onNavigate={setCurrentView}
+          />
+        );
+    }
+  };
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Mood Trend */}
-        <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="text-penda-purple" size={20} />
-            <h3 className="font-bold text-penda-purple">Mood History</h3>
-          </div>
-          <div className="h-40 w-full">
-            {chartData.length > 1 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#7A0050" stopOpacity={0.2}/>
-                      <stop offset="95%" stopColor="#7A0050" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5cfe0' }} />
-                  <Area type="monotone" dataKey="score" stroke="#7A0050" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
-                  <XAxis dataKey="date" hide />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-penda-light text-sm italic">
-                Log more journal entries to see trends.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border">
-          <div className="flex items-center gap-2 mb-4">
-            <ShieldCheck className="text-penda-purple" size={20} />
-            <h3 className="font-bold text-penda-purple">Your Stats</h3>
-          </div>
-          <div className="space-y-3">
-             <div className="flex items-center justify-between p-3 bg-penda-bg rounded-firm border border-penda-border">
-                <span className="text-penda-text text-sm">Current Check-in Streak</span>
-                <span className="font-bold text-penda-purple">{streakCount} Days</span>
-             </div>
-             <div className="flex items-center justify-between p-3 bg-penda-bg rounded-firm border border-penda-border">
-                <span className="text-penda-text text-sm">Total Journal Entries</span>
-                <span className="font-bold text-penda-purple">{journals.length}</span>
-             </div>
-          </div>
-        </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-penda-bg via-penda-tan to-white text-penda-text">
+      <div className="flex flex-col md:flex-row min-h-screen">
+        <Sidebar
+          currentView={currentView}
+          setView={setCurrentView}
+          isMobile={false}
+          isLoggedIn={user.isLoggedIn}
+          shareApp={shareApp}
+        />
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
       </div>
     </div>
   );
 };
+
+export default App;

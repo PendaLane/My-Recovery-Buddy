@@ -10,7 +10,6 @@ import {
   FileText,
   Award,
   BookOpen,
-  UserCog,
   LogOut,
   Share2
 } from 'lucide-react';
@@ -35,37 +34,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
     { id: View.CONTACTS, label: 'Phone Book', icon: Phone },
   ];
 
-  // Items that link to actual WP pages
-  const externalItems = [
-    { 
-      label: 'My Membership', 
-      icon: UserCog, 
-      href: '/membership-account/',
-      visible: isLoggedIn 
-    },
-    { 
-      label: 'Join / Levels', 
-      icon: UserCog, 
-      href: '/membership-levels/',
-      visible: !isLoggedIn 
-    },
-  ];
-
-  const baseClass = isMobile 
+  const baseClass = isMobile
     ? "fixed bottom-0 left-0 w-full bg-white border-t border-penda-border flex overflow-x-auto p-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] gap-2"
-    : "w-64 bg-penda-bg border-r border-penda-border flex flex-col p-4 h-full shadow-lg shrink-0 overflow-y-auto";
+    : "w-72 bg-penda-bg border-r border-penda-border/80 flex flex-col p-5 h-full shadow-lg shrink-0 overflow-y-auto";
 
   return (
     <nav className={baseClass}>
       {!isMobile && (
-        <div className="mb-8 px-2 flex flex-col items-center text-center">
-            <img
-              src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png"
-              alt="Penda Lane"
-              className="w-20 h-20 rounded-full object-cover mix-blend-multiply mb-3 border border-penda-border"
-            />
-            <h1 className="font-bold text-penda-purple text-lg leading-tight">My Recovery Buddy</h1>
-            <p className="text-xs text-penda-light mt-1">Powered by Penda Lane</p>
+        <div className="mb-8 px-2 flex flex-col items-center text-center gap-1">
+          <div className="w-24 h-24 rounded-full bg-white border-2 border-penda-purple shadow-lg flex items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-penda-light/50 via-penda-tan to-white" />
+            <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-penda-purple to-penda-light text-white flex items-center justify-center text-2xl font-extrabold tracking-tight shadow-inner">
+              PL
+            </div>
+          </div>
+          <div className="text-[11px] uppercase tracking-[0.35em] text-penda-purple mt-1">Penda Lane</div>
+          <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
+          <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
+          <p className="text-[11px] text-penda-light">Compassionate support for every step.</p>
         </div>
       )}
       
@@ -96,36 +82,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
         );
       })}
 
-      {/* External WP Links & Share */}
+      {/* App utilities */}
       <div className={isMobile ? "flex gap-2" : "mt-4 pt-4 border-t border-penda-border/50"}>
         <button
             onClick={shareApp}
-            className={isMobile 
-             ? "flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-lg text-[10px] whitespace-nowrap text-penda-purple bg-white border border-penda-border" 
+            className={isMobile
+             ? "flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-lg text-[10px] whitespace-nowrap text-penda-purple bg-white border border-penda-border"
              : "flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-penda-purple hover:bg-white bg-white border border-transparent w-full text-left"}
         >
             <Share2 size={isMobile ? 18 : 20} />
             <span>Share App</span>
         </button>
 
-        {externalItems.filter(i => i.visible).map((item, idx) => {
-          const Icon = item.icon;
-          const buttonClass = isMobile
-            ? "flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-lg text-[10px] whitespace-nowrap text-penda-light bg-white border border-penda-border"
-            : "flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-penda-light hover:text-penda-purple hover:bg-white w-full text-left";
-
-          return (
-            <a key={idx} href={item.href} className={buttonClass}>
-              <Icon size={isMobile ? 18 : 20} />
-              <span>{item.label}</span>
-            </a>
-          );
-        })}
-        
         {/* Help Button (Internal) */}
         <button
           onClick={() => setView(View.HELP)}
-          className={isMobile 
+          className={isMobile
              ? "flex flex-col items-center gap-1 min-w-[60px] p-2 rounded-lg text-[10px] whitespace-nowrap text-red-600 bg-red-50 border border-red-100" 
              : "flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-red-600 hover:bg-red-50 bg-white border border-transparent w-full text-left"}
         >
@@ -134,10 +106,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
         </button>
 
         {isLoggedIn && !isMobile && (
-          <a href="/wp-login.php?action=logout&redirect_to=/" className="flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-penda-light hover:text-penda-purple hover:bg-white w-full text-left">
+          <button
+            onClick={() => setView(View.DASHBOARD)}
+            className="flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-penda-light hover:text-penda-purple hover:bg-white w-full text-left"
+          >
             <LogOut size={20} />
-            <span>Log Out</span>
-          </a>
+            <span>End Session</span>
+          </button>
         )}
       </div>
     </nav>

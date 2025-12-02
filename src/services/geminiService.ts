@@ -2,7 +2,8 @@ import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
 
 // Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = import.meta.env.VITE_API_KEY;
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 const SYSTEM_INSTRUCTION_COACH = `
 You are "Recovery Buddy", a compassionate, non-judgmental, and wise recovery coach and sponsor. 
@@ -15,7 +16,7 @@ Your goal is to support the user in their sobriety from alcohol and substances.
 `;
 
 export const getAICoachResponse = async (history: ChatMessage[], newMessage: string): Promise<string> => {
-  if (!process.env.API_KEY) return "Error: API Key is missing. Please check your configuration.";
+  if (!ai) return "Error: API Key is missing. Please check your configuration.";
 
   try {
     const model = 'gemini-2.5-flash';
@@ -43,7 +44,7 @@ export const getAICoachResponse = async (history: ChatMessage[], newMessage: str
 };
 
 export const analyzeJournalEntry = async (entryText: string, mood: string): Promise<string> => {
-  if (!process.env.API_KEY) return "Unable to generate reflection without API Key.";
+  if (!ai) return "Unable to generate reflection without API Key.";
 
   try {
     const prompt = `
