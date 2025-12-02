@@ -64,12 +64,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
                 <button
                   onClick={() => onNavigate?.(View.MEETINGS)}
                   className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg transition-colors"
+                  className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors"
                 >
                   <LogIn size={16} /> Meeting Finder
                 </button>
                 <button
                   onClick={() => onNavigate?.(View.JOURNAL)}
                   className="flex-1 bg-penda-purple/90 border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-penda-purple transition-colors"
+                  className="flex-1 bg-penda-purple border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg hover:text-penda-purple transition-colors"
                 >
                   <UserPlus size={16} /> Start a Journal
                 </button>
@@ -119,6 +121,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
                   </defs>
                   <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5cfe0' }} />
                     <Area type="monotone" dataKey="score" stroke="#5b3a6f" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
+                    </linearGradient>
+                  </defs>
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5cfe0' }} />
+                    <Area type="monotone" dataKey="score" stroke="#5b3a6f" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
+                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5cfe0' }} />
+                    <Area type="monotone" dataKey="score" stroke="#4f46e5" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
                   <XAxis dataKey="date" hide />
                 </AreaChart>
               </ResponsiveContainer>
