@@ -7,17 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        'penda-purple': '#5b3a6f',
-        'penda-light': '#a178a6',
-        'penda-bg': '#f4e8d9',
-        'penda-text': '#2f1f17',
-        'penda-border': '#e5d5c1',
-        'penda-tan': '#f0e1cd',
-        'penda-purple': '#4f46e5',
-        'penda-light': '#818cf8',
-        'penda-bg': '#eef2ff',
-        'penda-text': '#0f172a',
-        'penda-border': '#e2e8f0',
+        'penda-purple': '#7A0050',
+        'penda-light': '#b33a89',
+        'penda-bg': '#f3ecde',
+        'penda-text': '#2d1b27',
+        'penda-border': '#e5cfe0',
+        'penda-soft': '#f6e6f1',
+        'penda-tan': '#e9ddc7',
       },
       borderRadius: {
         'firm': '14px',
