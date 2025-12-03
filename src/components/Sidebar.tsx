@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from '../types';
-const heroLogoSrc = 'https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png';
+import heroLogoSrc from '../assets/penda-lane-logo.svg';
 import {
   LayoutDashboard,
   BookHeart,
@@ -14,7 +14,8 @@ import {
   LogOut,
   Share2,
   UserRound,
-  Clock3
+  Clock3,
+  CreditCard
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -37,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
     { id: View.AI_COACH, label: 'AI Companion', icon: BotMessageSquare },
     { id: View.BADGES, label: 'Badges & Streaks', icon: Award },
     { id: View.FIND_TREATMENT, label: 'Find Treatment', icon: FileText },
+    { id: View.MEMBERSHIP, label: 'Membership', icon: CreditCard },
   ];
 
   const baseClass = isMobile

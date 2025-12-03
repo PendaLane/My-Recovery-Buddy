@@ -90,7 +90,7 @@ export const MeetingLog: React.FC<MeetingLogProps> = ({ logs, onCheckIn, onCheck
             </button>
           </div>
         </div>
-        <p className="text-xs text-penda-light">Your meeting history is stored locally on this device for your privacy.</p>
+        <p className="text-xs text-penda-light">Your check-ins and check-outs are saved securely in My Recovery Buddy so you can export them anytime.</p>
       </div>
 
       <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border">

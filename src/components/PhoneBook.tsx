@@ -37,7 +37,7 @@ export const PhoneBook: React.FC<PhoneBookProps> = ({ contacts, onSave, onDelete
       <header>
         <h2 className="text-2xl font-bold text-penda-purple">Trusted Phone Book</h2>
         <p className="text-sm text-penda-light">
-          Keep your sponsor, peers, and providers handy. Saved locally on this device only.
+          Keep your sponsor, peers, and providers handy. Contacts are saved securely to My Recovery Buddy.
         </p>
       </header>
 

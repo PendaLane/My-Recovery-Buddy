@@ -5,6 +5,7 @@ import {
   Contact,
   JournalEntry,
   MeetingLog,
+  MembershipInfo,
   StepWork,
   Streak,
   UserProfile,
@@ -23,38 +24,22 @@ import { PhoneBook } from './components/PhoneBook';
 import { MyAccount } from './components/MyAccount';
 import { FindTreatment } from './components/FindTreatment';
 import { SignUp } from './components/SignUp';
+import { MembershipPortal } from './components/MembershipPortal';
+import { createDefaultState, fetchState, PersistedState, saveState } from './services/stateService';
 
-const loadFromStorage = <T,>(key: string, fallback: T): T => {
-  if (typeof localStorage === 'undefined') return fallback;
-  try {
-    const stored = localStorage.getItem(key);
-    return stored ? (JSON.parse(stored) as T) : fallback;
-  } catch (err) {
-    console.warn(`Failed to read ${key} from storage`, err);
-    return fallback;
+const getOrCreateClientId = () => {
+  const existing = document.cookie
+    .split(';')
+    .map((c) => c.trim())
+    .find((c) => c.startsWith('mrb_user_id='));
+
+  if (existing) {
+    return existing.split('=')[1];
   }
-};
 
-const persistToStorage = <T,>(key: string, value: T) => {
-  if (typeof localStorage === 'undefined') return;
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (err) {
-    console.warn(`Failed to save ${key} to storage`, err);
-  }
-};
-
-const defaultUser: UserProfile = {
-  id: 'guest',
-  displayName: 'Guest',
-  email: 'guest@example.com',
-  avatar: 'https://i.pravatar.cc/100?img=65',
-  homegroup: '',
-  servicePosition: '',
-  state: '',
-  emergencyContact: undefined,
-  joinedAt: undefined,
-  isLoggedIn: false,
+  const newId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `user-${Date.now()}`;
+  document.cookie = `mrb_user_id=${newId}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  return newId;
 };
 
 const sampleBadges: Badge[] = [
@@ -64,52 +49,62 @@ const sampleBadges: Badge[] = [
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
-  const [user, setUser] = useState<UserProfile>(() => loadFromStorage<UserProfile>('userProfile', defaultUser));
-  const [sobrietyDate, setSobrietyDate] = useState<string | null>(() => loadFromStorage('sobrietyDate', null));
-  const [journals, setJournals] = useState<JournalEntry[]>(() =>
-    loadFromStorage<JournalEntry[]>('journalEntries', [])
-  );
-  const [meetingLogs, setMeetingLogs] = useState<MeetingLog[]>(() =>
-    loadFromStorage<MeetingLog[]>('meetingLogs', [])
-  );
-  const [contacts, setContacts] = useState<Contact[]>(() => loadFromStorage<Contact[]>('contacts', []));
-  const [streak, setStreak] = useState<Streak>(() =>
-    loadFromStorage<Streak>('streak', { current: 0, longest: 0, lastCheckInDate: null })
-  );
-  const [stepWorkList, setStepWorkList] = useState<StepWork[]>(() =>
-    loadFromStorage<StepWork[]>('stepWork', [])
-  );
-  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() =>
-    loadFromStorage<boolean>('notificationsEnabled', true)
-  );
+  const [clientId] = useState<string>(() => getOrCreateClientId());
+  const [isHydrating, setIsHydrating] = useState<boolean>(true);
+  const [user, setUser] = useState<UserProfile>(() => createDefaultState(getOrCreateClientId()).user);
+  const [sobrietyDate, setSobrietyDate] = useState<string | null>(null);
+  const [journals, setJournals] = useState<JournalEntry[]>([]);
+  const [meetingLogs, setMeetingLogs] = useState<MeetingLog[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [streak, setStreak] = useState<Streak>({ current: 0, longest: 0, lastCheckInDate: null });
+  const [stepWorkList, setStepWorkList] = useState<StepWork[]>([]);
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
+  const [membership, setMembership] = useState<MembershipInfo>(() => createDefaultState(getOrCreateClientId()).membership);
 
   useEffect(() => {
-    persistToStorage('userProfile', user);
-  }, [user]);
+    const defaultState = createDefaultState(clientId);
+
+    const applyState = (state: PersistedState) => {
+      setUser(state.user || defaultState.user);
+      setSobrietyDate(state.sobrietyDate ?? defaultState.sobrietyDate);
+      setJournals(state.journals ?? defaultState.journals);
+      setMeetingLogs(state.meetingLogs ?? defaultState.meetingLogs);
+      setContacts(state.contacts ?? defaultState.contacts);
+      setStreak(state.streak ?? defaultState.streak);
+      setStepWorkList(state.stepWorkList ?? defaultState.stepWorkList);
+      setNotificationsEnabled(state.notificationsEnabled ?? defaultState.notificationsEnabled);
+      setMembership(state.membership ?? defaultState.membership);
+    };
+
+    fetchState(clientId)
+      .then((state) => {
+        applyState(state || defaultState);
+      })
+      .catch((err) => {
+        console.warn('Falling back to default state', err);
+        applyState(defaultState);
+      })
+      .finally(() => setIsHydrating(false));
+  }, [clientId]);
 
   useEffect(() => {
-    persistToStorage('sobrietyDate', sobrietyDate);
-  }, [sobrietyDate]);
+    if (isHydrating) return;
+    const state: PersistedState = {
+      user: { ...user, id: clientId },
+      sobrietyDate,
+      journals,
+      meetingLogs,
+      contacts,
+      streak,
+      stepWorkList,
+      notificationsEnabled,
+      membership,
+    };
 
-  useEffect(() => {
-    persistToStorage('journalEntries', journals);
-  }, [journals]);
-
-  useEffect(() => {
-    persistToStorage('meetingLogs', meetingLogs);
-  }, [meetingLogs]);
-
-  useEffect(() => {
-    persistToStorage('contacts', contacts);
-  }, [contacts]);
-
-  useEffect(() => {
-    persistToStorage('streak', streak);
-  }, [streak]);
-
-  useEffect(() => {
-    persistToStorage('stepWork', stepWorkList);
-  }, [stepWorkList]);
+    saveState(clientId, state).catch((err) => {
+      console.error('Failed to save state to Vercel KV', err);
+    });
+  }, [clientId, user, sobrietyDate, journals, meetingLogs, contacts, streak, stepWorkList, notificationsEnabled, isHydrating]);
 
   useEffect(() => {
     persistToStorage('notificationsEnabled', notificationsEnabled);
@@ -197,6 +192,7 @@ const App: React.FC = () => {
   const handleSignInOut = () => {
     setUser((prev) => ({
       ...prev,
+      id: clientId,
       isLoggedIn: !prev.isLoggedIn,
       joinedAt: prev.joinedAt || new Date().toISOString(),
     }));
@@ -210,10 +206,18 @@ const App: React.FC = () => {
     setUser((prev) => ({
       ...prev,
       ...profile,
-      id: prev.id === 'guest' ? `user-${Date.now()}` : prev.id,
+      id: clientId,
       isLoggedIn: true,
     }));
     setCurrentView(View.MY_ACCOUNT);
+  };
+
+  const updateMembership = (updates: Partial<MembershipInfo>) => {
+    setMembership((prev) => ({
+      ...prev,
+      ...updates,
+      lastUpdated: new Date().toISOString(),
+    }));
   };
 
   const renderView = () => {
@@ -236,6 +240,17 @@ const App: React.FC = () => {
         );
       case View.FIND_TREATMENT:
         return <FindTreatment />;
+      case View.MEMBERSHIP:
+        return (
+          <MembershipPortal
+            membership={membership}
+            user={user}
+            onUpdateMembership={updateMembership}
+            onUpdateProfile={handleProfileUpdate}
+            onLogin={() => setUser((prev) => ({ ...prev, isLoggedIn: true }))}
+            onLogout={() => setUser((prev) => ({ ...prev, isLoggedIn: false }))}
+          />
+        );
       case View.BADGES:
         return <Badges badges={sampleBadges} streak={streak} />;
       case View.READINGS:

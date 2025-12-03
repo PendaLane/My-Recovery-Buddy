@@ -70,6 +70,25 @@ export interface Streak {
   lastCheckInDate: string | null;
 }
 
+export interface MembershipInfo {
+  plan: 'Free' | 'Monthly' | 'Annual' | 'Day Pass';
+  status: 'none' | 'trialing' | 'active' | 'canceled' | 'paused' | 'logged-out';
+  renewalDate?: string;
+  memberId?: string;
+  lastLoginEmail?: string;
+  checkoutName?: string;
+  state?: string;
+  confirmationNumber?: string;
+  lastUpdated?: string;
+  orders: Array<{
+    id: string;
+    plan: string;
+    amount: string;
+    date: string;
+    status: 'paid' | 'pending' | 'refunded';
+  }>;
+}
+
 export enum View {
   DASHBOARD = 'DASHBOARD',
   JOURNAL = 'JOURNAL',
@@ -83,5 +102,6 @@ export enum View {
   FIND_TREATMENT = 'FIND_TREATMENT',
   HELP = 'HELP',
   SIGN_UP = 'SIGN_UP',
-  MY_ACCOUNT = 'MY_ACCOUNT'
+  MY_ACCOUNT = 'MY_ACCOUNT',
+  MEMBERSHIP = 'MEMBERSHIP'
 }
