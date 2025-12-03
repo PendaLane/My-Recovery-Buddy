@@ -13,8 +13,7 @@ import {
   LogOut,
   Share2,
   UserRound,
-  Clock3,
-  CreditCard
+  Clock3
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -37,7 +36,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
     { id: View.AI_COACH, label: 'AI Companion', icon: BotMessageSquare },
     { id: View.BADGES, label: 'Badges & Streaks', icon: Award },
     { id: View.FIND_TREATMENT, label: 'Find Treatment', icon: FileText },
-    { id: View.MEMBERSHIP, label: 'Membership', icon: CreditCard },
   ];
 
   const baseClass = isMobile

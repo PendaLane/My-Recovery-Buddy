@@ -1,4 +1,4 @@
-import { Contact, JournalEntry, MeetingLog, StepWork, Streak, UserProfile, MembershipInfo } from '../types';
+import { Contact, JournalEntry, MeetingLog, StepWork, Streak, UserProfile } from '../types';
 
 export interface PersistedState {
   user: UserProfile;
@@ -9,7 +9,6 @@ export interface PersistedState {
   streak: Streak;
   stepWorkList: StepWork[];
   notificationsEnabled: boolean;
-  membership: MembershipInfo;
 }
 
 const API_ENDPOINT = '/api/state';
@@ -34,18 +33,6 @@ export const createDefaultState = (userId: string): PersistedState => ({
   streak: { current: 0, longest: 0, lastCheckInDate: null },
   stepWorkList: [],
   notificationsEnabled: true,
-  membership: {
-    plan: 'Free',
-    status: 'none',
-    renewalDate: undefined,
-    memberId: undefined,
-    lastLoginEmail: '',
-    checkoutName: '',
-    state: '',
-    confirmationNumber: undefined,
-    lastUpdated: undefined,
-    orders: [],
-  },
 });
 
 export const fetchState = async (userId: string): Promise<PersistedState | null> => {

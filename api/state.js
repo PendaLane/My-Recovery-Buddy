@@ -1,11 +1,7 @@
 const KV_REST_API_URL = process.env.KV_REST_API_URL;
 const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
 
-const requireKv = () => {
-  if (!KV_REST_API_URL || !KV_REST_API_TOKEN) {
-    throw new Error('Vercel KV environment variables are not configured');
-  }
-};
+const kvAvailable = () => Boolean(KV_REST_API_URL && KV_REST_API_TOKEN);
 
 const keyForUser = (userId) => `mrb:state:${userId}`;
 
@@ -43,10 +39,8 @@ export default async function handler(req, res) {
   const userId = (req.query.userId || req.body?.userId || 'anonymous').toString();
   const storageKey = keyForUser(userId);
 
-  try {
-    requireKv();
-  } catch (err) {
-    res.status(503).json({ error: err.message });
+  if (!kvAvailable()) {
+    res.status(200).json(null);
     return;
   }
 

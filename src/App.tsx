@@ -1,16 +1,6 @@
 import React, { Component, ErrorInfo, useEffect, useMemo, useState } from 'react';
 import './index.css';
-import {
-  Badge,
-  Contact,
-  JournalEntry,
-  MeetingLog,
-  MembershipInfo,
-  StepWork,
-  Streak,
-  UserProfile,
-  View
-} from './types';
+import { Badge, Contact, JournalEntry, MeetingLog, StepWork, Streak, UserProfile, View } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { Journal } from './components/Journal';
@@ -24,7 +14,6 @@ import { PhoneBook } from './components/PhoneBook';
 import { MyAccount } from './components/MyAccount';
 import { FindTreatment } from './components/FindTreatment';
 import { SignUp } from './components/SignUp';
-import { MembershipPortal } from './components/MembershipPortal';
 import { createDefaultState, fetchState, PersistedState, saveState } from './services/stateService';
 
 const getOrCreateClientId = () => {
@@ -91,8 +80,6 @@ const App: React.FC = () => {
   const [streak, setStreak] = useState<Streak>({ current: 0, longest: 0, lastCheckInDate: null });
   const [stepWorkList, setStepWorkList] = useState<StepWork[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
-  const [membership, setMembership] = useState<MembershipInfo>(() => createDefaultState(getOrCreateClientId()).membership);
-  const [loadWarning, setLoadWarning] = useState<string | null>(null);
 
   useEffect(() => {
     const defaultState = createDefaultState(clientId);
@@ -106,19 +93,14 @@ const App: React.FC = () => {
       setStreak(state.streak ?? defaultState.streak);
       setStepWorkList(state.stepWorkList ?? defaultState.stepWorkList);
       setNotificationsEnabled(state.notificationsEnabled ?? defaultState.notificationsEnabled);
-      setMembership(state.membership ?? defaultState.membership);
     };
 
     fetchState(clientId)
       .then((state) => {
-        if (!state) {
-          setLoadWarning('Live sync unavailable right now — showing your local session data.');
-        }
         applyState(state || defaultState);
       })
       .catch((err) => {
         console.warn('Falling back to default state', err);
-        setLoadWarning('Live sync unavailable right now — showing your local session data.');
         applyState(defaultState);
       })
       .finally(() => setIsHydrating(false));
@@ -135,13 +117,12 @@ const App: React.FC = () => {
       streak,
       stepWorkList,
       notificationsEnabled,
-      membership,
     };
 
     saveState(clientId, state).catch((err) => {
       console.error('Failed to save state to Vercel KV', err);
     });
-  }, [clientId, user, sobrietyDate, journals, meetingLogs, contacts, streak, stepWorkList, notificationsEnabled, membership, isHydrating]);
+  }, [clientId, user, sobrietyDate, journals, meetingLogs, contacts, streak, stepWorkList, notificationsEnabled, isHydrating]);
 
   const addJournalEntry = (entry: JournalEntry) => {
     setJournals((prev) => [...prev, entry]);
@@ -245,12 +226,16 @@ const App: React.FC = () => {
     setCurrentView(View.MY_ACCOUNT);
   };
 
-  const updateMembership = (updates: Partial<MembershipInfo>) => {
-    setMembership((prev) => ({
-      ...prev,
-      ...updates,
-      lastUpdated: new Date().toISOString(),
-    }));
+  const resetAccount = () => {
+    const defaults = createDefaultState(clientId);
+    setUser(defaults.user);
+    setSobrietyDate(defaults.sobrietyDate);
+    setJournals(defaults.journals);
+    setMeetingLogs(defaults.meetingLogs);
+    setContacts(defaults.contacts);
+    setStreak(defaults.streak);
+    setStepWorkList(defaults.stepWorkList);
+    setNotificationsEnabled(defaults.notificationsEnabled);
   };
 
   const renderView = () => {
@@ -273,17 +258,6 @@ const App: React.FC = () => {
         );
       case View.FIND_TREATMENT:
         return <FindTreatment />;
-      case View.MEMBERSHIP:
-        return (
-          <MembershipPortal
-            membership={membership}
-            user={user}
-            onUpdateMembership={updateMembership}
-            onUpdateProfile={handleProfileUpdate}
-            onLogin={() => setUser((prev) => ({ ...prev, isLoggedIn: true }))}
-            onLogout={() => setUser((prev) => ({ ...prev, isLoggedIn: false }))}
-          />
-        );
       case View.BADGES:
         return <Badges badges={sampleBadges} streak={streak} />;
       case View.READINGS:
@@ -298,6 +272,8 @@ const App: React.FC = () => {
             stats={{ streakCount, journalCount: journals.length, meetingCount: meetingLogs.length }}
             notificationsEnabled={notificationsEnabled}
             onToggleNotifications={setNotificationsEnabled}
+            onToggleAuth={handleSignInOut}
+            onResetAccount={resetAccount}
           />
         );
       case View.SIGN_UP:
@@ -348,6 +324,21 @@ const App: React.FC = () => {
     }
   };
 
+  let viewContent: React.ReactNode = null;
+  try {
+    viewContent = renderView();
+  } catch (err) {
+    console.error('Failed to render view', err);
+    viewContent = (
+      <div className="bg-white border border-penda-border rounded-soft p-6 shadow-sm text-center">
+        <h2 className="text-lg font-bold text-penda-purple mb-2">We hit a snag</h2>
+        <p className="text-sm text-penda-text/80">
+          Please try again or choose a different tab while we reload this section.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <AppErrorBoundary>
       <div className="min-h-screen bg-penda-bg text-penda-text">
@@ -360,12 +351,7 @@ const App: React.FC = () => {
             shareApp={shareApp}
           />
           <div className="flex-1 flex flex-col">
-            {loadWarning && (
-              <div className="bg-amber-50 border-b border-amber-200 text-amber-800 text-sm px-4 py-2">
-                {loadWarning}
-              </div>
-            )}
-            <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto">{viewContent}</main>
             <footer className="border-t border-penda-border bg-white text-xs text-penda-light text-center py-3">
               © My Recovery Buddy by Penda Lane Behavioral Health — All rights reserved.
             </footer>
