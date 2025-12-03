@@ -189,6 +189,12 @@ export const MeetingFinder: React.FC = () => {
             </button>
           ))}
         </div>
+
+        {aiResponse && (
+          <div className="bg-penda-bg p-3 rounded-firm border border-penda-border text-sm text-penda-text whitespace-pre-wrap">
+            {aiResponse}
+          </div>
+        )}
       </div>
     </div>
   );
