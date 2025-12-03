@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
-import { getAICoachResponse } from '../services/geminiService';
+import { getAICoachResponse, getApiKeyStatus } from '../services/geminiService';
 import { Send, Bot, Loader2 } from 'lucide-react';
 
 export const AICoach: React.FC = () => {
@@ -14,6 +14,7 @@ export const AICoach: React.FC = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasApiKey] = useState(() => getApiKeyStatus().hasKey);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -63,12 +64,17 @@ export const AICoach: React.FC = () => {
             <Bot size={24} />
         </div>
         <div>
-            <h2 className="font-bold text-penda-purple">Community Chat AI</h2>
-            <p className="text-xs text-penda-light">Be kind and protect your privacy. This is a support space.</p>
+            <h2 className="font-bold text-penda-purple">My AI Companion</h2>
+            <p className="text-xs text-penda-light">Private, one-on-one support. Be kind to yourself and protect your privacy.</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#fffdf8]">
+        {!hasApiKey && (
+          <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-firm">
+            AI responses are temporarily unavailable. Please try again later.
+          </div>
+        )}
         {messages.map((msg) => (
           <div
             key={msg.id}

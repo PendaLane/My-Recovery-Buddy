@@ -10,9 +10,11 @@ interface DashboardProps {
   streakCount: number;
   user: UserProfile | null;
   onNavigate?: (view: View) => void;
+  onCreateAccount?: () => void;
+  onToggleAuth?: () => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user, onNavigate }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user, onNavigate, onCreateAccount, onToggleAuth }) => {
   const [daysSober, setDaysSober] = useState(0);
 
   useEffect(() => {
@@ -42,11 +44,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <header className="mb-4">
-        <h2 className="text-2xl font-bold text-penda-purple">
-          {user?.isLoggedIn ? `Welcome, ${user.displayName}` : "Welcome to Recovery Buddy"}
-        </h2>
-        <p className="text-penda-light text-sm">Meetings. Sponsors. Support. In your pocket.</p>
+      <header className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-penda-purple">
+            {user?.isLoggedIn ? `Welcome, ${user.displayName}` : "Welcome to My Recovery Buddy"}
+          </h2>
+          <p className="text-penda-light text-sm">Meetings. Sponsor. Support. In your pocket.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => onCreateAccount?.()}
+            className="bg-white text-penda-purple border border-penda-purple px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-bg"
+          >
+            Create Account
+          </button>
+          <button
+            onClick={() => onToggleAuth?.()}
+            className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-light"
+          >
+            {user?.isLoggedIn ? 'Sign Out' : 'Sign In'}
+          </button>
+        </div>
       </header>
 
       {/* Sobriety Counter Card */}
@@ -61,20 +79,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
             <div className="bg-white/10 p-4 rounded-firm border border-white/20 mb-4 backdrop-blur-sm">
               <p className="text-sm mb-3 font-medium">Save your sober date locally and jump into the tools that help you most.</p>
               <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => onNavigate?.(View.MEETINGS)}
-                  className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg transition-colors"
-                  className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors"
-                >
-                  <LogIn size={16} /> Meeting Finder
-                </button>
-                <button
-                  onClick={() => onNavigate?.(View.JOURNAL)}
-                  className="flex-1 bg-penda-purple/90 border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-penda-purple transition-colors"
-                  className="flex-1 bg-penda-purple border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg hover:text-penda-purple transition-colors"
-                >
-                  <UserPlus size={16} /> Start a Journal
-                </button>
+                  <button
+                    onClick={() => onNavigate?.(View.MEETINGS)}
+                    className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg transition-colors"
+                  >
+                    <LogIn size={16} /> Find A Meeting
+                  </button>
+                  <button
+                    onClick={() => onNavigate?.(View.JOURNAL)}
+                    className="flex-1 bg-penda-purple border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-penda-purple transition-colors"
+                  >
+                    <UserPlus size={16} /> Start a Journal
+                  </button>
               </div>
             </div>
 
@@ -120,17 +136,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
                     </linearGradient>
                   </defs>
                   <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5cfe0' }} />
-                    <Area type="monotone" dataKey="score" stroke="#5b3a6f" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
-                    </linearGradient>
-                  </defs>
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5cfe0' }} />
-                    <Area type="monotone" dataKey="score" stroke="#5b3a6f" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
-                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.25}/>
-                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5cfe0' }} />
-                    <Area type="monotone" dataKey="score" stroke="#4f46e5" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
+                  <Area
+                    type="monotone"
+                    dataKey="score"
+                    stroke="#5b3a6f"
+                    fillOpacity={1}
+                    fill="url(#colorScore)"
+                    strokeWidth={2}
+                  />
                   <XAxis dataKey="date" hide />
                 </AreaChart>
               </ResponsiveContainer>
