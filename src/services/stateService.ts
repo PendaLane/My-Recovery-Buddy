@@ -1,0 +1,65 @@
+import { Contact, JournalEntry, MeetingLog, StepWork, Streak, UserProfile } from '../types';
+
+export interface PersistedState {
+  user: UserProfile;
+  sobrietyDate: string | null;
+  journals: JournalEntry[];
+  meetingLogs: MeetingLog[];
+  contacts: Contact[];
+  streak: Streak;
+  stepWorkList: StepWork[];
+  notificationsEnabled: boolean;
+}
+
+const API_ENDPOINT = '/api/state';
+
+export const createDefaultState = (userId: string): PersistedState => ({
+  user: {
+    id: userId,
+    displayName: 'Guest',
+    email: 'guest@example.com',
+    avatar: 'https://i.pravatar.cc/100?img=65',
+    homegroup: '',
+    servicePosition: '',
+    state: '',
+    emergencyContact: undefined,
+    joinedAt: undefined,
+    isLoggedIn: false,
+  },
+  sobrietyDate: null,
+  journals: [],
+  meetingLogs: [],
+  contacts: [],
+  streak: { current: 0, longest: 0, lastCheckInDate: null },
+  stepWorkList: [],
+  notificationsEnabled: true,
+});
+
+export const fetchState = async (userId: string): Promise<PersistedState | null> => {
+  try {
+    const response = await fetch(`${API_ENDPOINT}?userId=${encodeURIComponent(userId)}`);
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as PersistedState | null;
+  } catch (error) {
+    console.warn('Falling back to default state (fetch error)', error);
+    return null;
+  }
+};
+
+export const saveState = async (userId: string, state: PersistedState): Promise<void> => {
+  try {
+    const response = await fetch(`${API_ENDPOINT}?userId=${encodeURIComponent(userId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...state, user: { ...state.user, id: userId } }),
+    });
+
+    if (!response.ok) {
+      console.warn('KV save skipped (non-ok response)');
+    }
+  } catch (error) {
+    console.warn('KV save skipped (network error)', error);
+  }
+};
