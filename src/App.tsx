@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Component, ErrorInfo, useEffect, useMemo, useState } from 'react';
 import './index.css';
 import {
   Badge,
   Contact,
   JournalEntry,
   MeetingLog,
+  MembershipInfo,
   StepWork,
   Streak,
   UserProfile,
@@ -15,37 +16,30 @@ import { Dashboard } from './components/Dashboard';
 import { Journal } from './components/Journal';
 import { AICoach } from './components/AICoach';
 import { MeetingFinder } from './components/MeetingFinder';
+import { MeetingLog } from './components/MeetingLog';
 import { StepWorkComponent } from './components/StepWork';
 import { Badges } from './components/Badges';
 import { Readings } from './components/Readings';
 import { PhoneBook } from './components/PhoneBook';
+import { MyAccount } from './components/MyAccount';
+import { FindTreatment } from './components/FindTreatment';
+import { SignUp } from './components/SignUp';
+import { MembershipPortal } from './components/MembershipPortal';
+import { createDefaultState, fetchState, PersistedState, saveState } from './services/stateService';
 
-const loadFromStorage = <T,>(key: string, fallback: T): T => {
-  if (typeof localStorage === 'undefined') return fallback;
-  try {
-    const stored = localStorage.getItem(key);
-    return stored ? (JSON.parse(stored) as T) : fallback;
-  } catch (err) {
-    console.warn(`Failed to read ${key} from storage`, err);
-    return fallback;
+const getOrCreateClientId = () => {
+  const existing = document.cookie
+    .split(';')
+    .map((c) => c.trim())
+    .find((c) => c.startsWith('mrb_user_id='));
+
+  if (existing) {
+    return existing.split('=')[1];
   }
-};
 
-const persistToStorage = <T,>(key: string, value: T) => {
-  if (typeof localStorage === 'undefined') return;
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (err) {
-    console.warn(`Failed to save ${key} to storage`, err);
-  }
-};
-
-const defaultUser: UserProfile = {
-  id: 'guest',
-  displayName: 'Guest',
-  email: 'guest@example.com',
-  avatar: 'https://i.pravatar.cc/100?img=65',
-  isLoggedIn: false,
+  const newId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `user-${Date.now()}`;
+  document.cookie = `mrb_user_id=${newId}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  return newId;
 };
 
 const sampleBadges: Badge[] = [
@@ -53,47 +47,101 @@ const sampleBadges: Badge[] = [
   { id: '2', key: 'first-checkin', label: 'First Check-in', earnedAt: '2024-01-12', icon: 'Check' },
 ];
 
+class AppErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('App render error', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-penda-bg flex items-center justify-center p-6 text-center">
+          <div className="bg-white border border-penda-border rounded-soft p-6 max-w-md shadow-lg">
+            <h1 className="text-xl font-bold text-penda-purple mb-2">We hit a snag</h1>
+            <p className="text-sm text-penda-light">
+              Please refresh the page. If the issue persists, try again in a few minutes while we reconnect your data.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
-  const [user] = useState<UserProfile>(defaultUser);
-  const [sobrietyDate, setSobrietyDate] = useState<string | null>(() => loadFromStorage('sobrietyDate', null));
-  const [journals, setJournals] = useState<JournalEntry[]>(() =>
-    loadFromStorage<JournalEntry[]>('journalEntries', [])
-  );
-  const [meetingLogs, setMeetingLogs] = useState<MeetingLog[]>(() =>
-    loadFromStorage<MeetingLog[]>('meetingLogs', [])
-  );
-  const [contacts, setContacts] = useState<Contact[]>(() => loadFromStorage<Contact[]>('contacts', []));
-  const [streak, setStreak] = useState<Streak>(() =>
-    loadFromStorage<Streak>('streak', { current: 0, longest: 0, lastCheckInDate: null })
-  );
-  const [stepWorkList, setStepWorkList] = useState<StepWork[]>(() =>
-    loadFromStorage<StepWork[]>('stepWork', [])
-  );
+  const [clientId] = useState<string>(() => getOrCreateClientId());
+  const [isHydrating, setIsHydrating] = useState<boolean>(true);
+  const [user, setUser] = useState<UserProfile>(() => createDefaultState(getOrCreateClientId()).user);
+  const [sobrietyDate, setSobrietyDate] = useState<string | null>(null);
+  const [journals, setJournals] = useState<JournalEntry[]>([]);
+  const [meetingLogs, setMeetingLogs] = useState<MeetingLog[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [streak, setStreak] = useState<Streak>({ current: 0, longest: 0, lastCheckInDate: null });
+  const [stepWorkList, setStepWorkList] = useState<StepWork[]>([]);
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
+  const [membership, setMembership] = useState<MembershipInfo>(() => createDefaultState(getOrCreateClientId()).membership);
+  const [loadWarning, setLoadWarning] = useState<string | null>(null);
 
   useEffect(() => {
-    persistToStorage('sobrietyDate', sobrietyDate);
-  }, [sobrietyDate]);
+    const defaultState = createDefaultState(clientId);
+
+    const applyState = (state: PersistedState) => {
+      setUser(state.user || defaultState.user);
+      setSobrietyDate(state.sobrietyDate ?? defaultState.sobrietyDate);
+      setJournals(state.journals ?? defaultState.journals);
+      setMeetingLogs(state.meetingLogs ?? defaultState.meetingLogs);
+      setContacts(state.contacts ?? defaultState.contacts);
+      setStreak(state.streak ?? defaultState.streak);
+      setStepWorkList(state.stepWorkList ?? defaultState.stepWorkList);
+      setNotificationsEnabled(state.notificationsEnabled ?? defaultState.notificationsEnabled);
+      setMembership(state.membership ?? defaultState.membership);
+    };
+
+    fetchState(clientId)
+      .then((state) => {
+        if (!state) {
+          setLoadWarning('Live sync unavailable right now — showing your local session data.');
+        }
+        applyState(state || defaultState);
+      })
+      .catch((err) => {
+        console.warn('Falling back to default state', err);
+        setLoadWarning('Live sync unavailable right now — showing your local session data.');
+        applyState(defaultState);
+      })
+      .finally(() => setIsHydrating(false));
+  }, [clientId]);
 
   useEffect(() => {
-    persistToStorage('journalEntries', journals);
-  }, [journals]);
+    if (isHydrating) return;
+    const state: PersistedState = {
+      user: { ...user, id: clientId },
+      sobrietyDate,
+      journals,
+      meetingLogs,
+      contacts,
+      streak,
+      stepWorkList,
+      notificationsEnabled,
+      membership,
+    };
 
-  useEffect(() => {
-    persistToStorage('meetingLogs', meetingLogs);
-  }, [meetingLogs]);
-
-  useEffect(() => {
-    persistToStorage('contacts', contacts);
-  }, [contacts]);
-
-  useEffect(() => {
-    persistToStorage('streak', streak);
-  }, [streak]);
-
-  useEffect(() => {
-    persistToStorage('stepWork', stepWorkList);
-  }, [stepWorkList]);
+    saveState(clientId, state).catch((err) => {
+      console.error('Failed to save state to Vercel KV', err);
+    });
+  }, [clientId, user, sobrietyDate, journals, meetingLogs, contacts, streak, stepWorkList, notificationsEnabled, membership, isHydrating]);
 
   const addJournalEntry = (entry: JournalEntry) => {
     setJournals((prev) => [...prev, entry]);
@@ -134,27 +182,27 @@ const App: React.FC = () => {
     });
   };
 
-  const handleCheckIn = () => {
+  const handleCheckIn = (location: string) => {
     const now = new Date();
     setMeetingLogs((prev) => [
-      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-In' },
+      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-In', location },
       ...prev,
     ]);
     updateStreakOnCheckIn(now);
   };
 
-  const handleCheckOut = () => {
+  const handleCheckOut = (location: string) => {
     const now = new Date();
     setMeetingLogs((prev) => [
-      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-Out' },
+      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-Out', location },
       ...prev,
     ]);
   };
 
   const shareApp = () => {
     const shareData = {
-      title: 'Recovery Buddy',
-      text: 'Check out Recovery Buddy — a supportive companion for your sobriety journey.',
+      title: 'My Recovery Buddy',
+      text: 'Check out My Recovery Buddy — a supportive companion for your sobriety journey.',
       url: window.location.origin,
     };
 
@@ -170,6 +218,41 @@ const App: React.FC = () => {
 
   const streakCount = useMemo(() => streak.current, [streak]);
 
+  const handleProfileUpdate = (profile: UserProfile) => {
+    setUser(profile);
+  };
+
+  const handleSignInOut = () => {
+    setUser((prev) => ({
+      ...prev,
+      id: clientId,
+      isLoggedIn: !prev.isLoggedIn,
+      joinedAt: prev.joinedAt || new Date().toISOString(),
+    }));
+  };
+
+  const handleCreateAccount = () => {
+    setCurrentView(View.SIGN_UP);
+  };
+
+  const handleSignUpSubmit = (profile: Partial<UserProfile>) => {
+    setUser((prev) => ({
+      ...prev,
+      ...profile,
+      id: clientId,
+      isLoggedIn: true,
+    }));
+    setCurrentView(View.MY_ACCOUNT);
+  };
+
+  const updateMembership = (updates: Partial<MembershipInfo>) => {
+    setMembership((prev) => ({
+      ...prev,
+      ...updates,
+      lastUpdated: new Date().toISOString(),
+    }));
+  };
+
   const renderView = () => {
     switch (currentView) {
       case View.JOURNAL:
@@ -177,7 +260,9 @@ const App: React.FC = () => {
       case View.AI_COACH:
         return <AICoach />;
       case View.MEETINGS:
-        return <MeetingFinder logs={meetingLogs} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut} />;
+        return <MeetingFinder />;
+      case View.MEETING_LOG:
+        return <MeetingLog logs={meetingLogs} onCheckIn={handleCheckIn} onCheckOut={handleCheckOut} />;
       case View.STEPWORK:
         return (
           <StepWorkComponent
@@ -186,12 +271,37 @@ const App: React.FC = () => {
             deleteStepWork={deleteStepWork}
           />
         );
+      case View.FIND_TREATMENT:
+        return <FindTreatment />;
+      case View.MEMBERSHIP:
+        return (
+          <MembershipPortal
+            membership={membership}
+            user={user}
+            onUpdateMembership={updateMembership}
+            onUpdateProfile={handleProfileUpdate}
+            onLogin={() => setUser((prev) => ({ ...prev, isLoggedIn: true }))}
+            onLogout={() => setUser((prev) => ({ ...prev, isLoggedIn: false }))}
+          />
+        );
       case View.BADGES:
         return <Badges badges={sampleBadges} streak={streak} />;
       case View.READINGS:
         return <Readings />;
       case View.CONTACTS:
-        return <PhoneBook contacts={contacts} onSave={saveContact} onDelete={deleteContact} />;
+        return <PhoneBook contacts={contacts} onSave={saveContact} onDelete={deleteContact} emergencyContact={user.emergencyContact} />;
+      case View.MY_ACCOUNT:
+        return (
+          <MyAccount
+            user={user}
+            onUpdateProfile={handleProfileUpdate}
+            stats={{ streakCount, journalCount: journals.length, meetingCount: meetingLogs.length }}
+            notificationsEnabled={notificationsEnabled}
+            onToggleNotifications={setNotificationsEnabled}
+          />
+        );
+      case View.SIGN_UP:
+        return <SignUp user={user} onSubmit={handleSignUpSubmit} />;
       case View.HELP:
         return (
           <div className="space-y-4">
@@ -199,10 +309,26 @@ const App: React.FC = () => {
             <p className="text-sm text-penda-light">
               If you are in immediate danger or feel unsafe, please call your local emergency number right away.
             </p>
-            <div className="bg-white p-4 rounded-soft border border-penda-border space-y-2">
-              <p className="text-sm text-penda-text">SAMHSA National Helpline (USA): 1-800-662-4357</p>
-              <p className="text-sm text-penda-text">988 Suicide & Crisis Lifeline: Dial or text 988</p>
-              <p className="text-sm text-penda-text">Emergency Services: 911</p>
+            <div className="bg-white p-4 rounded-soft border border-penda-border space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <a href="tel:988" className="flex items-center justify-center gap-2 bg-red-600 text-white px-3 py-3 rounded-firm font-semibold shadow-md hover:bg-red-700">
+                  Call 988
+                </a>
+                <a href="sms:988" className="flex items-center justify-center gap-2 bg-white text-red-700 border border-red-200 px-3 py-3 rounded-firm font-semibold shadow-sm hover:bg-red-50">
+                  Text 988
+                </a>
+                <a href="https://988lifeline.org/chat/" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 bg-white text-red-700 border border-red-200 px-3 py-3 rounded-firm font-semibold shadow-sm hover:bg-red-50">
+                  Chat Online
+                </a>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <a href="tel:18006624357" className="flex items-center justify-center gap-2 bg-penda-purple text-white px-3 py-3 rounded-firm font-semibold shadow-md hover:bg-penda-light">
+                  SAMHSA Helpline 1-800-662-4357
+                </a>
+                <a href="tel:911" className="flex items-center justify-center gap-2 bg-penda-tan text-penda-purple px-3 py-3 rounded-firm font-semibold shadow-sm border border-penda-border">
+                  Emergency Services (911)
+                </a>
+              </div>
             </div>
           </div>
         );
@@ -215,25 +341,38 @@ const App: React.FC = () => {
             streakCount={streakCount}
             user={user}
             onNavigate={setCurrentView}
+            onCreateAccount={handleCreateAccount}
+            onToggleAuth={handleSignInOut}
           />
         );
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-penda-bg via-penda-tan to-white text-penda-text">
-    <div className="min-h-screen bg-penda-bg text-penda-text">
-      <div className="flex flex-col md:flex-row min-h-screen">
-        <Sidebar
-          currentView={currentView}
-          setView={setCurrentView}
-          isMobile={false}
-          isLoggedIn={user.isLoggedIn}
-          shareApp={shareApp}
-        />
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+    <AppErrorBoundary>
+      <div className="min-h-screen bg-penda-bg text-penda-text">
+        <div className="flex flex-col md:flex-row min-h-screen">
+          <Sidebar
+            currentView={currentView}
+            setView={setCurrentView}
+            isMobile={false}
+            isLoggedIn={user.isLoggedIn}
+            shareApp={shareApp}
+          />
+          <div className="flex-1 flex flex-col">
+            {loadWarning && (
+              <div className="bg-amber-50 border-b border-amber-200 text-amber-800 text-sm px-4 py-2">
+                {loadWarning}
+              </div>
+            )}
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+            <footer className="border-t border-penda-border bg-white text-xs text-penda-light text-center py-3">
+              © My Recovery Buddy by Penda Lane Behavioral Health — All rights reserved.
+            </footer>
+          </div>
+        </div>
       </div>
-    </div>
+    </AppErrorBoundary>
   );
 };
 
