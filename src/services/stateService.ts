@@ -49,21 +49,30 @@ export const createDefaultState = (userId: string): PersistedState => ({
 });
 
 export const fetchState = async (userId: string): Promise<PersistedState | null> => {
-  const response = await fetch(`${API_ENDPOINT}?userId=${encodeURIComponent(userId)}`);
-  if (!response.ok) {
-    throw new Error('Unable to load saved data');
+  try {
+    const response = await fetch(`${API_ENDPOINT}?userId=${encodeURIComponent(userId)}`);
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as PersistedState | null;
+  } catch (error) {
+    console.warn('Falling back to default state (fetch error)', error);
+    return null;
   }
-  return (await response.json()) as PersistedState | null;
 };
 
 export const saveState = async (userId: string, state: PersistedState): Promise<void> => {
-  const response = await fetch(`${API_ENDPOINT}?userId=${encodeURIComponent(userId)}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...state, user: { ...state.user, id: userId } }),
-  });
+  try {
+    const response = await fetch(`${API_ENDPOINT}?userId=${encodeURIComponent(userId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...state, user: { ...state.user, id: userId } }),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to save data');
+    if (!response.ok) {
+      console.warn('KV save skipped (non-ok response)');
+    }
+  } catch (error) {
+    console.warn('KV save skipped (network error)', error);
   }
 };

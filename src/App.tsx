@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Component, ErrorInfo, useEffect, useMemo, useState } from 'react';
 import './index.css';
 import {
   Badge,
@@ -47,6 +47,38 @@ const sampleBadges: Badge[] = [
   { id: '2', key: 'first-checkin', label: 'First Check-in', earnedAt: '2024-01-12', icon: 'Check' },
 ];
 
+class AppErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('App render error', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-penda-bg flex items-center justify-center p-6 text-center">
+          <div className="bg-white border border-penda-border rounded-soft p-6 max-w-md shadow-lg">
+            <h1 className="text-xl font-bold text-penda-purple mb-2">We hit a snag</h1>
+            <p className="text-sm text-penda-light">
+              Please refresh the page. If the issue persists, try again in a few minutes while we reconnect your data.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
   const [clientId] = useState<string>(() => getOrCreateClientId());
@@ -60,6 +92,7 @@ const App: React.FC = () => {
   const [stepWorkList, setStepWorkList] = useState<StepWork[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
   const [membership, setMembership] = useState<MembershipInfo>(() => createDefaultState(getOrCreateClientId()).membership);
+  const [loadWarning, setLoadWarning] = useState<string | null>(null);
 
   useEffect(() => {
     const defaultState = createDefaultState(clientId);
@@ -78,10 +111,14 @@ const App: React.FC = () => {
 
     fetchState(clientId)
       .then((state) => {
+        if (!state) {
+          setLoadWarning('Live sync unavailable right now — showing your local session data.');
+        }
         applyState(state || defaultState);
       })
       .catch((err) => {
         console.warn('Falling back to default state', err);
+        setLoadWarning('Live sync unavailable right now — showing your local session data.');
         applyState(defaultState);
       })
       .finally(() => setIsHydrating(false));
@@ -104,11 +141,7 @@ const App: React.FC = () => {
     saveState(clientId, state).catch((err) => {
       console.error('Failed to save state to Vercel KV', err);
     });
-  }, [clientId, user, sobrietyDate, journals, meetingLogs, contacts, streak, stepWorkList, notificationsEnabled, isHydrating]);
-
-  useEffect(() => {
-    persistToStorage('notificationsEnabled', notificationsEnabled);
-  }, [notificationsEnabled]);
+  }, [clientId, user, sobrietyDate, journals, meetingLogs, contacts, streak, stepWorkList, notificationsEnabled, membership, isHydrating]);
 
   const addJournalEntry = (entry: JournalEntry) => {
     setJournals((prev) => [...prev, entry]);
@@ -316,23 +349,30 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-penda-bg text-penda-text">
-      <div className="flex flex-col md:flex-row min-h-screen">
-        <Sidebar
-          currentView={currentView}
-          setView={setCurrentView}
-          isMobile={false}
-          isLoggedIn={user.isLoggedIn}
-          shareApp={shareApp}
-        />
-        <div className="flex-1 flex flex-col">
-          <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
-          <footer className="border-t border-penda-border bg-white text-xs text-penda-light text-center py-3">
-            © My Recovery Buddy by Penda Lane Behavioral Health — All rights reserved.
-          </footer>
+    <AppErrorBoundary>
+      <div className="min-h-screen bg-penda-bg text-penda-text">
+        <div className="flex flex-col md:flex-row min-h-screen">
+          <Sidebar
+            currentView={currentView}
+            setView={setCurrentView}
+            isMobile={false}
+            isLoggedIn={user.isLoggedIn}
+            shareApp={shareApp}
+          />
+          <div className="flex-1 flex flex-col">
+            {loadWarning && (
+              <div className="bg-amber-50 border-b border-amber-200 text-amber-800 text-sm px-4 py-2">
+                {loadWarning}
+              </div>
+            )}
+            <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+            <footer className="border-t border-penda-border bg-white text-xs text-penda-light text-center py-3">
+              © My Recovery Buddy by Penda Lane Behavioral Health — All rights reserved.
+            </footer>
+          </div>
         </div>
       </div>
-    </div>
+    </AppErrorBoundary>
   );
 };
 
