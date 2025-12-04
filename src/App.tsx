@@ -138,17 +138,6 @@ const App: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleUnload);
   }, [sessionStartedAt, sessionId, user]);
 
-  const handleSignIn = (displayName?: string) => {
-    const now = new Date().toISOString();
-    setUser((prev) => ({
-      ...prev,
-      id: prev.id === defaultUser.id ? sessionId : prev.id,
-      displayName: displayName || prev.displayName,
-      isLoggedIn: true,
-    }));
-    setSessionStartedAt(now);
-  };
-
   const handleSignOut = () => {
     if (user.isLoggedIn && sessionStartedAt) {
       const endedAt = new Date().toISOString();
