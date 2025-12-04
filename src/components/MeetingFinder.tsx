@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { MeetingLog } from '../types';
 import { MapPin, CheckCircle, ExternalLink } from 'lucide-react';
 
-interface MeetingFinderProps {
-  logs: MeetingLog[];
-  onCheckIn: () => void;
-  onCheckOut: () => void;
-}
+const directories = [
+  { href: 'https://aa.org', label: 'Alcoholics Anonymous (AA)' },
+  { href: 'https://na.org/meetingsearch/', label: 'Narcotics Anonymous (NA)' },
+  { href: 'https://ca.org/meetings/', label: 'Cocaine Anonymous (CA)' },
+  { href: 'https://www.smartrecovery.org/local/', label: 'SMART Recovery' },
+  { href: 'https://recoverydharma.org/meetings', label: 'Recovery Dharma' },
+];
 
-export const MeetingFinder: React.FC<MeetingFinderProps> = ({ logs, onCheckIn, onCheckOut }) => {
+export const MeetingFinder: React.FC = () => {
   const [location, setLocation] = useState('');
+  const [query, setQuery] = useState('');
 
   const meetingPathways = [
     {
@@ -168,17 +171,19 @@ export const MeetingFinder: React.FC<MeetingFinderProps> = ({ logs, onCheckIn, o
         </div>
       </header>
 
-      {/* Search Card */}
-      <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border">
-        <label className="block text-xs font-medium text-penda-light mb-1">City, ZIP, or Area</label>
-        <div className="relative mb-4">
-            <input 
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Example: Frederick, MD"
-                className="w-full p-2 border border-penda-border rounded-firm focus:outline-none focus:border-penda-purple pl-9"
+      <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border space-y-4">
+        <div>
+          <label className="block text-xs font-medium text-penda-light mb-1">City, ZIP, or Area</label>
+          <div className="relative">
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Example: Frederick, MD"
+              className="w-full p-2 border border-penda-border rounded-firm focus:outline-none focus:border-penda-purple pl-9"
             />
             <MapPin className="absolute left-3 top-2.5 text-penda-border" size={16} />
+          </div>
+          <p className="text-[11px] text-penda-light mt-1">Add your city or ZIP for the most accurate nearby results.</p>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
@@ -245,14 +250,24 @@ export const MeetingFinder: React.FC<MeetingFinderProps> = ({ logs, onCheckIn, o
             </button>
         </div>
 
-        <div className="space-y-2 max-h-60 overflow-y-auto">
-            {logs.length === 0 ? <p className="text-penda-light text-sm italic">No logs yet.</p> : logs.map(log => (
-                <div key={log.id} className="p-3 border border-penda-border rounded-firm bg-white flex justify-between items-center text-sm">
-                    <span className="text-penda-text">{new Date(log.timestamp).toLocaleString()}</span>
-                    <span className={`px-2 py-0.5 rounded text-xs ${log.type === 'Check-In' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{log.type}</span>
-                </div>
-            ))}
+        <div className="relative mt-3">
+          <textarea
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Example: women’s-only AA meeting tonight with wheelchair access"
+            className="w-full border border-penda-border rounded-firm p-3 pr-12 text-sm focus:outline-none focus:border-penda-purple focus:ring-1 focus:ring-penda-purple min-h-[96px]"
+          />
+          <button
+            onClick={handleCustomSearch}
+            disabled={!query.trim()}
+            className="absolute right-3 bottom-3 bg-penda-purple text-white rounded-firm p-2 hover:bg-penda-light disabled:opacity-50"
+          >
+            <Send size={16} />
+          </button>
         </div>
+        <p className="text-xs text-penda-light">
+          We’ll open a Google search with your wording plus your location so you see the closest options.
+        </p>
       </div>
     </div>
   );

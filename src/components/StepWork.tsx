@@ -10,7 +10,8 @@ interface StepWorkProps {
 
 export const StepWorkComponent: React.FC<StepWorkProps> = ({ stepWorkList, saveStepWork, deleteStepWork }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    myName: '',
+    sponsorName: '',
     phone: '',
     email: '',
     step: 'Step 1',
@@ -18,26 +19,27 @@ export const StepWorkComponent: React.FC<StepWorkProps> = ({ stepWorkList, saveS
   });
 
   const handleSubmit = () => {
-    if (!formData.name) {
+    if (!formData.sponsorName) {
       alert("Please enter a sponsor name.");
       return;
     }
     const newWork: StepWork = {
       id: Date.now().toString(),
-      sponsorName: formData.name,
+      memberName: formData.myName,
+      sponsorName: formData.sponsorName,
       sponsorPhone: formData.phone,
       sponsorEmail: formData.email,
       currentStep: formData.step,
       weeklyPlan: formData.plan
     };
     saveStepWork(newWork);
-    setFormData({ name: '', phone: '', email: '', step: 'Step 1', plan: '' });
+    setFormData({ myName: '', sponsorName: '', phone: '', email: '', step: 'Step 1', plan: '' });
   };
 
   return (
     <div className="space-y-6">
       <header>
-        <h2 className="text-2xl font-bold text-penda-purple">My Stepwork</h2>
+        <h2 className="text-2xl font-bold text-penda-purple">My Step Work</h2>
         <div className="bg-penda-bg p-3 rounded-firm border border-dashed border-penda-light mt-2 text-xs text-penda-text">
             Log in or create a free account to save your sponsor and stepwork notes.
         </div>
@@ -46,41 +48,53 @@ export const StepWorkComponent: React.FC<StepWorkProps> = ({ stepWorkList, saveS
       <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-penda-light mb-1">Name</label>
+            <label className="block text-xs font-medium text-penda-light mb-1">My Name</label>
             <div className="relative">
                 <User className="absolute left-3 top-2.5 text-penda-border" size={16} />
-                <input 
-                    value={formData.name}
-                    onChange={e => setFormData({...formData, name: e.target.value})}
+                <input
+                    value={formData.myName}
+                    onChange={e => setFormData({...formData, myName: e.target.value})}
                     className="w-full pl-9 p-2 rounded-firm border border-penda-border focus:outline-none focus:border-penda-purple"
                 />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
+             <div>
+                <label className="block text-xs font-medium text-penda-light mb-1">Sponsor's Name</label>
+                <div className="relative">
+                    <User className="absolute left-3 top-2.5 text-penda-border" size={16} />
+                    <input
+                        value={formData.sponsorName}
+                        onChange={e => setFormData({...formData, sponsorName: e.target.value})}
+                        className="w-full pl-9 p-2 rounded-firm border border-penda-border focus:outline-none focus:border-penda-purple"
+                    />
+                </div>
+             </div>
              <div>
                 <label className="block text-xs font-medium text-penda-light mb-1">Phone</label>
                 <div className="relative">
                     <Phone className="absolute left-3 top-2.5 text-penda-border" size={16} />
-                    <input 
+                    <input
                         value={formData.phone}
                         onChange={e => setFormData({...formData, phone: e.target.value})}
                         className="w-full pl-9 p-2 rounded-firm border border-penda-border focus:outline-none focus:border-penda-purple"
                     />
                 </div>
              </div>
-             <div>
-                <label className="block text-xs font-medium text-penda-light mb-1">Email</label>
-                <div className="relative">
-                    <Mail className="absolute left-3 top-2.5 text-penda-border" size={16} />
-                    <input 
-                        value={formData.email}
-                        onChange={e => setFormData({...formData, email: e.target.value})}
-                        type="email"
-                        className="w-full pl-9 p-2 rounded-firm border border-penda-border focus:outline-none focus:border-penda-purple"
-                    />
-                </div>
-             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-penda-light mb-1">Sponsor's Email</label>
+            <div className="relative">
+                <Mail className="absolute left-3 top-2.5 text-penda-border" size={16} />
+                <input
+                    value={formData.email}
+                    onChange={e => setFormData({...formData, email: e.target.value})}
+                    type="email"
+                    className="w-full pl-9 p-2 rounded-firm border border-penda-border focus:outline-none focus:border-penda-purple"
+                />
+            </div>
           </div>
 
           <div>
@@ -124,6 +138,7 @@ export const StepWorkComponent: React.FC<StepWorkProps> = ({ stepWorkList, saveS
             <div key={item.id} className="bg-white p-4 rounded-firm border border-penda-border shadow-sm">
                 <div className="flex justify-between items-start">
                     <div>
+                        {item.memberName && <div className="text-xs text-penda-light mb-1">{item.memberName}'s plan</div>}
                         <div className="font-bold text-penda-purple">{item.sponsorName}</div>
                         <div className="text-xs text-penda-light mb-2">{item.sponsorPhone} • {item.sponsorEmail}</div>
                         <div className="text-sm font-medium mb-1">Working on: {item.currentStep}</div>
