@@ -1,13 +1,11 @@
-# Recovery Buddy App
+# My Recovery Buddy
 
-If you see the error:
+My Recovery Buddy is a Vite + React app that provides recovery tools, meeting resources, journaling, and synced profile data.
 
-> Codex does not currently support updating PRs that are updated outside of Codex. For now, please create a new PR.
+## Development
+- Install dependencies: `npm install`
+- Run locally: `npm run dev`
+- Build for production: `npm run build`
 
-follow these steps to rerun checks successfully:
-
-1. Pull the latest `work` branch (or your feature branch) locally so you have the newest commit.
-2. Create a **new** pull request from that branch instead of reopening or editing the previous one.
-3. Let Vercel and CI run on the new PR; rate-limit or stale-PR conflicts will clear with the fresh PR.
-
-This keeps Vercel deployments and other checks clean when prior PRs were modified outside Codex.
+## Deployment notes
+The app expects Vercel-provided services (Postgres via Prisma, KV, Blob, and Edge Config) plus the required environment variables. API routes under `/api` handle state sync, uploads, and session analytics.
