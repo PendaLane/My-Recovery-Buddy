@@ -1,9 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
 
-// Initialize Gemini Client
-const apiKey = import.meta.env.VITE_API_KEY;
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
+const ENV_API_KEY = import.meta.env.VITE_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+
+let ai = ENV_API_KEY ? new GoogleGenAI({ apiKey: ENV_API_KEY }) : null;
+
+export const getApiKeyStatus = () => ({
+  hasKey: Boolean(ENV_API_KEY),
+  source: ENV_API_KEY ? "env" : "none",
+});
+
+const getClient = () => ai;
 
 const SYSTEM_INSTRUCTION_COACH = `
 You are "Recovery Buddy", a compassionate, non-judgmental, and wise recovery coach and sponsor. 
@@ -16,7 +23,8 @@ Your goal is to support the user in their sobriety from alcohol and substances.
 `;
 
 export const getAICoachResponse = async (history: ChatMessage[], newMessage: string): Promise<string> => {
-  if (!ai) return "Error: API Key is missing. Please check your configuration.";
+  const client = getClient();
+  if (!client) return "AI is temporarily unavailable. Please try again later.";
 
   try {
     const model = 'gemini-2.5-flash';
@@ -26,7 +34,7 @@ export const getAICoachResponse = async (history: ChatMessage[], newMessage: str
       parts: [{ text: msg.text }]
     }));
 
-    const chat = ai.chats.create({
+    const chat = client.chats.create({
       model,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION_COACH,
@@ -44,7 +52,8 @@ export const getAICoachResponse = async (history: ChatMessage[], newMessage: str
 };
 
 export const analyzeJournalEntry = async (entryText: string, mood: string): Promise<string> => {
-  if (!ai) return "Unable to generate reflection without API Key.";
+  const client = getClient();
+  if (!client) return "AI reflections are temporarily unavailable.";
 
   try {
     const prompt = `
@@ -56,7 +65,7 @@ export const analyzeJournalEntry = async (entryText: string, mood: string): Prom
       End with a short encouraging affirmation.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
     });

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { JournalEntry, UserProfile } from '../types';
 import { analyzeJournalEntry } from '../services/geminiService';
-import { saveJournalEntryToFirebase } from '../services/backend';
 import { Sparkles, Save, Book, Plus, Lock } from 'lucide-react';
 
 interface JournalProps {
@@ -32,14 +31,6 @@ export const Journal: React.FC<JournalProps> = ({ entries, addEntry, user }) => 
 
     addEntry(newEntry);
 
-    if (user.isLoggedIn) {
-        try {
-            await saveJournalEntryToFirebase(newEntry, user);
-        } catch (e) {
-            console.error("Failed to sync to cloud", e);
-        }
-    }
-
     setIsAnalyzing(false);
     setText('');
     setMood('Okay');
@@ -65,7 +56,7 @@ export const Journal: React.FC<JournalProps> = ({ entries, addEntry, user }) => 
           {!user.isLoggedIn && (
               <div className="bg-amber-50 p-3 rounded-firm border border-amber-200 flex gap-2 items-start text-xs text-amber-800">
                 <Lock size={14} className="mt-0.5" />
-                <span>You are in Guest mode. Your entries will be saved to this device only. Log in to save securely to your account.</span>
+                <span>You are in Guest mode. Entries are saved securely to My Recovery Buddy with your private session. Create an account to keep everything tied to you.</span>
               </div>
           )}
 
