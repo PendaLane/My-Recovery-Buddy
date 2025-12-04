@@ -23,47 +23,18 @@ import { PhoneBook } from './components/PhoneBook';
 import Logo from './assets/penda-logo.svg';
 import { loadState, recordSessionAnalytics, saveState, RemoteFlags } from './services/cloudStore';
 
-  const newId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `user-${Date.now()}`;
-  document.cookie = `mrb_user_id=${newId}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
-  return newId;
+const defaultUser: UserProfile = {
+  id: 'guest',
+  displayName: 'Guest',
+  email: 'guest@example.com',
+  avatar: 'https://i.pravatar.cc/100?img=65',
+  isLoggedIn: false,
 };
 
 const sampleBadges: Badge[] = [
   { id: '1', key: 'first-journal', label: 'First Journal', earnedAt: '2024-01-10', icon: 'Award' },
   { id: '2', key: 'first-checkin', label: 'First Check-in', earnedAt: '2024-01-12', icon: 'Check' },
 ];
-
-class AppErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('App render error', error, info);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen bg-penda-bg flex items-center justify-center p-6 text-center">
-          <div className="bg-white border border-penda-border rounded-soft p-6 max-w-md shadow-lg">
-            <h1 className="text-xl font-bold text-penda-purple mb-2">We hit a snag</h1>
-            <p className="text-sm text-penda-light">
-              Please refresh the page. If the issue persists, try again in a few minutes while we reconnect your data.
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
@@ -122,6 +93,50 @@ const App: React.FC = () => {
   const addJournalEntry = (entry: JournalEntry) => {
     setJournals((prev) => [...prev, entry]);
   };
+
+  const handleSignIn = (displayName?: string) => {
+    const now = new Date().toISOString();
+    setUser((prev) => ({
+      ...prev,
+      id: prev.id === defaultUser.id ? sessionId : prev.id,
+      displayName: displayName || prev.displayName,
+      isLoggedIn: true,
+    }));
+    setSessionStartedAt(now);
+  };
+
+  const handleSignOut = () => {
+    if (user.isLoggedIn && sessionStartedAt) {
+      const endedAt = new Date().toISOString();
+      recordSessionAnalytics({
+        sessionId,
+        userId: user.id,
+        startedAt: sessionStartedAt,
+        endedAt,
+        durationMs: new Date(endedAt).getTime() - new Date(sessionStartedAt).getTime(),
+      });
+    }
+    setUser((prev) => ({ ...prev, isLoggedIn: false }));
+    setSessionStartedAt(null);
+  };
+
+  useEffect(() => {
+    const handleUnload = () => {
+      if (user.isLoggedIn && sessionStartedAt) {
+        const endedAt = new Date().toISOString();
+        recordSessionAnalytics({
+          sessionId,
+          userId: user.id,
+          startedAt: sessionStartedAt,
+          endedAt,
+          durationMs: new Date(endedAt).getTime() - new Date(sessionStartedAt).getTime(),
+        });
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [sessionStartedAt, sessionId, user]);
 
   const handleSignIn = (displayName?: string) => {
     const now = new Date().toISOString();

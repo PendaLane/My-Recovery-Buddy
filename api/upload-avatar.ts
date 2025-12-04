@@ -7,6 +7,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).end('Method not allowed');
   }
 
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return res.status(503).json({ error: 'Blob storage unavailable: BLOB_READ_WRITE_TOKEN not configured' });
+  }
+
   const dataUrl = req.body?.dataUrl as string;
   if (!dataUrl || !dataUrl.startsWith('data:image')) {
     return res.status(400).json({ error: 'dataUrl required' });

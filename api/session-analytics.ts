@@ -4,6 +4,13 @@ import { get } from '@vercel/edge-config';
 
 const ANALYTICS_TABLE = 'session_analytics';
 
+const hasRequiredEnv = () =>
+  Boolean(
+    process.env.POSTGRES_URL ||
+      process.env.POSTGRES_PRISMA_URL ||
+      process.env.POSTGRES_URL_NON_POOLING,
+  );
+
 async function ensureTable() {
   await sql`CREATE TABLE IF NOT EXISTS ${sql.identifier([ANALYTICS_TABLE])} (
     id bigserial PRIMARY KEY,
@@ -21,6 +28,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).end('Method not allowed');
+  }
+
+  if (!hasRequiredEnv()) {
+    return res.status(503).json({ error: 'Database unavailable: POSTGRES_URL not configured' });
   }
 
   const flags = await get<boolean>('analytics_enabled').catch(() => true);

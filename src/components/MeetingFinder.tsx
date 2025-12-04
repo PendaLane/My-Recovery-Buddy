@@ -155,6 +155,147 @@ export const MeetingFinder: React.FC = () => {
     },
   ];
 
+  const meetingPathways = [
+    {
+      heading: '12-Step',
+      description:
+        'Time-tested fellowships that use the Twelve Steps to support sobriety and service.',
+      items: [
+        { name: 'Alcoholics Anonymous (AA)', url: 'https://www.aa.org/', blurb: 'Peer-led fellowship for people who want to stop drinking.' },
+        { name: 'Narcotics Anonymous (NA)', url: 'https://www.na.org/', blurb: 'Support for anyone seeking recovery from drug use.' },
+        {
+          name: 'Cocaine Anonymous (CA)',
+          url: 'https://ca.org/',
+          blurb:
+            'Men and women who share experience, strength, and hope to recover from addiction.',
+        },
+        {
+          name: 'Adult Children of Alcoholics (ACA)',
+          url: 'https://adultchildren.org/',
+          blurb:
+            'Twelve Step fellowship for those raised in alcoholic or otherwise dysfunctional homes.',
+        },
+        {
+          name: 'Dual Recovery Anonymous (DRA)',
+          url: 'http://www.draonline.org',
+          blurb: 'Peer community for people managing both addiction and mental health conditions.',
+        },
+      ],
+    },
+    {
+      heading: 'Secular (Non-Religious)',
+      description:
+        'Evidence-based and self-empowering pathways that do not use spiritual language.',
+      items: [
+        {
+          name: 'LifeRing Secular Recovery',
+          url: 'https://www.lifering.org/',
+          blurb:
+            'Practical, peer-driven sobriety support with respect for every individual path.',
+        },
+        {
+          name: 'SMART Recovery',
+          url: 'https://www.smartrecovery.org/',
+          blurb:
+            'Science-backed tools and meetings that build motivation, resilience, and balance.',
+        },
+      ],
+    },
+    {
+      heading: 'Spiritual / Religious',
+      description: 'Faith-informed options that blend recovery with spiritual practice.',
+      items: [
+        {
+          name: 'White Bison Wellbriety',
+          url: 'https://whitebison.org/',
+          blurb: 'Native-led healing resources and circles for sobriety and wellness.',
+        },
+        {
+          name: 'Recovery Dharma',
+          url: 'https://recoverydharma.org',
+          blurb: 'Buddhist-inspired peer community using the Dharma to heal from addiction.',
+        },
+        {
+          name: 'Refuge Recovery',
+          url: 'https://refugerecovery.org/',
+          blurb: 'Meditation-focused program grounded in Buddhist principles for freedom from addiction.',
+        },
+        {
+          name: 'Celebrate Recovery',
+          url: 'https://www.celebraterecovery.com/',
+          blurb: 'Christ-centered 12-Step recovery for anyone facing hurts, habits, or hang-ups.',
+        },
+        {
+          name: 'Alcoholics for Christ',
+          url: 'https://www.alcoholicsforchrist.com/',
+          blurb:
+            'Inter-denominational fellowship supporting substance users, families, and adult children.',
+        },
+        {
+          name: 'Pioneer Association',
+          url: 'https://www.pioneers.ie/',
+          blurb: 'International Roman Catholic teetotaler community encouraging abstinence.',
+        },
+      ],
+    },
+    {
+      heading: 'Medication Assisted Treatment (MAT)',
+      description:
+        'FDA-approved medications like methadone, buprenorphine, and naltrexone paired with counseling.',
+      items: [
+        {
+          name: 'Find MAT Providers Nationwide',
+          url: 'https://findtreatment.gov/',
+          blurb: 'Search for MAT programs and clinics in your state.',
+        },
+      ],
+    },
+    {
+      heading: 'Wellness Based Recovery',
+      description: 'Mind-body approaches such as yoga, meditation, tai chi, and mindful movement.',
+      items: [
+        {
+          name: 'Recovery 2.0',
+          url: 'https://r20.com/',
+          blurb:
+            'Global community blending spiritual traditions, the Twelve Steps, and daily practices.',
+        },
+      ],
+    },
+    {
+      heading: 'Active Sober Community',
+      description: 'Fitness- and outdoors-focused communities that pair activity with recovery support.',
+      items: [
+        {
+          name: 'The Phoenix',
+          url: 'https://thephoenix.org/',
+          blurb: 'Sober active community offering events, classes, and connection.',
+        },
+        {
+          name: 'ROCovery Fitness',
+          url: 'https://www.rocoveryfitness.org/',
+          blurb: 'Wellness and peer connection through fitness and outdoor activities.',
+        },
+        {
+          name: 'Fit To Recover',
+          url: 'https://www.fit2recover.org/',
+          blurb: 'Community that blends fitness, nutrition, creative arts, and service.',
+        },
+      ],
+    },
+    {
+      heading: 'Online Recovery Supports',
+      description: 'Virtual-first communities that make it easy to connect from anywhere.',
+      items: [
+        {
+          name: 'In The Rooms',
+          url: 'https://www.intherooms.com/home/',
+          blurb: 'Global online recovery community with live meetings and discussion groups.',
+        },
+      ],
+    },
+  ];
+
   const searchMeetings = (type: string) => {
     const loc = (location || "near me").trim();
     const q = encodeURIComponent(`${type} meeting ${loc}`);
