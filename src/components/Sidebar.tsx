@@ -23,15 +23,15 @@ interface SidebarProps {
   setView: (view: View) => void;
   isMobile: boolean;
   isLoggedIn: boolean;
+  onSignOut: () => void;
   shareApp: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile, isLoggedIn, shareApp }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile, isLoggedIn, shareApp, onSignOut }) => {
   const menuItems = [
     { id: View.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
     { id: View.MEETINGS, label: 'Find A Meeting', icon: MapPin },
-    { id: View.MEETING_LOG, label: 'Meeting Log', icon: Clock3 },
-    { id: View.STEPWORK, label: 'Step Work', icon: FileText },
+    { id: View.AI_COACH, label: 'AI Companion', icon: BotMessageSquare },
     { id: View.JOURNAL, label: 'Journal', icon: BookHeart },
     { id: View.CONTACTS, label: 'Phone Book', icon: Phone },
     { id: View.READINGS, label: 'Daily Readings', icon: BookOpen },
@@ -52,11 +52,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
       {!isMobile && (
         <div className="mb-8 px-2 flex flex-col items-center text-center gap-2">
           <div className="w-24 h-24 rounded-[28px] bg-white border-2 border-penda-border shadow-lg flex items-center justify-center overflow-hidden">
-            <img src={heroLogoSrc} alt="Penda Lane Behavioral Health" className="w-full h-full object-contain" />
+            <img src={Logo} alt="Penda Lane" className="w-full h-full object-contain" />
           </div>
+          <div className="text-[11px] uppercase tracking-[0.35em] text-penda-purple mt-2">Penda Lane</div>
           <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
           <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
-          <p className="text-[11px] text-penda-light">{heroTagline}</p>
+          <p className="text-[11px] text-penda-light">Compassionate support for every step.</p>
         </div>
       )}
       
@@ -132,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
 
         {isLoggedIn && !isMobile && (
           <button
-            onClick={() => setView(View.DASHBOARD)}
+            onClick={() => onSignOut()}
             className="flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-penda-light hover:text-penda-purple hover:bg-white w-full text-left"
           >
             <LogOut size={20} />

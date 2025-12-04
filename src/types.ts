@@ -27,9 +27,29 @@ export interface JournalEntry {
 export interface Contact {
   id: string;
   name: string;
-  role: 'Sponsor' | 'Peer Support' | 'Therapist' | 'Family' | 'Friend';
+  role: 'Sponsor' | 'Peer' | 'Therapist' | 'Family' | 'Friend';
   phone: string;
-  fellowship: 'AA' | 'NA' | 'CA' | 'Other';
+  fellowship:
+    | 'AA'
+    | 'NA'
+    | 'CA'
+    | 'ACA'
+    | 'DRA'
+    | 'LifeRing'
+    | 'SMART Recovery'
+    | 'White Bison'
+    | 'Recovery Dharma'
+    | 'Refuge Recovery'
+    | 'Celebrate Recovery'
+    | 'Alcoholics for Christ'
+    | 'Pioneer Association'
+    | 'MAT'
+    | 'Recovery 2.0'
+    | 'Phoenix'
+    | 'ROCovery Fitness'
+    | 'Fit To Recover'
+    | 'In The Rooms'
+    | 'Other';
 }
 
 export interface MeetingLog {

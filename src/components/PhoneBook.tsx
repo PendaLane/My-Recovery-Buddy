@@ -9,8 +9,29 @@ interface PhoneBookProps {
   emergencyContact?: { name: string; phone: string; relation?: string };
 }
 
-const roleOptions: Contact['role'][] = ['Sponsor', 'Peer Support', 'Therapist', 'Family', 'Friend'];
-const fellowshipOptions: Contact['fellowship'][] = ['AA', 'NA', 'CA', 'Other'];
+const roleOptions: Contact['role'][] = ['Sponsor', 'Peer', 'Therapist', 'Family', 'Friend'];
+const fellowshipOptions: Contact['fellowship'][] = [
+  'AA',
+  'NA',
+  'CA',
+  'ACA',
+  'DRA',
+  'LifeRing',
+  'SMART Recovery',
+  'White Bison',
+  'Recovery Dharma',
+  'Refuge Recovery',
+  'Celebrate Recovery',
+  'Alcoholics for Christ',
+  'Pioneer Association',
+  'MAT',
+  'Recovery 2.0',
+  'Phoenix',
+  'ROCovery Fitness',
+  'Fit To Recover',
+  'In The Rooms',
+  'Other',
+];
 
 export const PhoneBook: React.FC<PhoneBookProps> = ({ contacts, onSave, onDelete, emergencyContact }) => {
   const [form, setForm] = useState<Omit<Contact, 'id'>>({

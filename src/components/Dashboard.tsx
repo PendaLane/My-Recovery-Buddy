@@ -44,6 +44,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      <header className="mb-4">
+        <h2 className="text-2xl font-bold text-penda-purple">
+          {user?.isLoggedIn ? `Welcome, ${user.displayName}` : "Welcome to My Recovery Buddy"}
+        </h2>
+        <p className="text-penda-light text-sm">Meetings. Sponsors. Support. In your pocket.</p>
+      </header>
+
       {/* Sobriety Counter Card */}
       <div className="bg-gradient-to-r from-penda-purple via-penda-light to-penda-tan rounded-soft p-6 text-white shadow-lg relative overflow-hidden border border-penda-purple">
         <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -56,18 +63,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
             <div className="bg-white/10 p-4 rounded-firm border border-white/20 mb-4 backdrop-blur-sm">
               <p className="text-sm mb-3 font-medium">Save your sober date and jump into the tools that help you most—everything stays synced to My Recovery Buddy.</p>
               <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => onNavigate?.(View.MEETINGS)}
-                    className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg transition-colors"
-                  >
-                    <LogIn size={16} /> Find A Meeting
-                  </button>
-                  <button
-                    onClick={() => onNavigate?.(View.JOURNAL)}
-                    className="flex-1 bg-penda-purple border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-penda-purple transition-colors"
-                  >
-                    <UserPlus size={16} /> Start a Journal
-                  </button>
+                <button
+                  onClick={() => onNavigate?.(View.MEETINGS)}
+                  className="flex-1 bg-white text-penda-purple py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-penda-bg transition-colors"
+                >
+                  <LogIn size={16} /> Meeting Finder
+                </button>
+                <button
+                  onClick={() => onNavigate?.(View.JOURNAL)}
+                  className="flex-1 bg-penda-purple/90 border border-white/30 text-white py-2 rounded-firm text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-penda-purple transition-colors"
+                >
+                  <UserPlus size={16} /> Start a Journal
+                </button>
               </div>
             </div>
 
@@ -113,14 +120,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
                     </linearGradient>
                   </defs>
                   <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5cfe0' }} />
-                  <Area
-                    type="monotone"
-                    dataKey="score"
-                    stroke="#5b3a6f"
-                    fillOpacity={1}
-                    fill="url(#colorScore)"
-                    strokeWidth={2}
-                  />
+                    <Area type="monotone" dataKey="score" stroke="#5b3a6f" fillOpacity={1} fill="url(#colorScore)" strokeWidth={2} />
                   <XAxis dataKey="date" hide />
                 </AreaChart>
               </ResponsiveContainer>
