@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+*.log
+.vercel
+.env
+.env.*
+dist
+.cache

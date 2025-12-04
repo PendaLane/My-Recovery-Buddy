@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { JournalEntry, UserProfile } from '../types';
 import { analyzeJournalEntry } from '../services/geminiService';
-import { saveJournalEntryToFirebase } from '../services/backend';
 import { Sparkles, Save, Book, Plus, Lock } from 'lucide-react';
 
 interface JournalProps {
@@ -31,14 +30,6 @@ export const Journal: React.FC<JournalProps> = ({ entries, addEntry, user }) => 
     };
 
     addEntry(newEntry);
-
-    if (user.isLoggedIn) {
-        try {
-            await saveJournalEntryToFirebase(newEntry, user);
-        } catch (e) {
-            console.error("Failed to sync to cloud", e);
-        }
-    }
 
     setIsAnalyzing(false);
     setText('');
