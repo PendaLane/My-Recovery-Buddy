@@ -16,7 +16,7 @@ import {
   Clock3,
   Info
 } from 'lucide-react';
-import heroLogo from '../assets/penda-lane-logo-2025.svg';
+const HERO_LOGO_URL = 'https://drive.google.com/uc?export=view&id=1tCy-EvkV-8FLqdNMUv1joH3yD-b9HABc';
 
 interface SidebarProps {
   currentView: View;
@@ -44,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
     ? "sticky top-0 left-0 w-full bg-white border-b border-penda-border flex overflow-x-auto p-2 z-40 shadow-sm gap-2"
     : "w-72 bg-penda-bg border-r border-penda-border/80 flex flex-col p-5 h-full shadow-lg shrink-0 overflow-y-auto";
 
-  const heroLogoSrc = heroLogo;
+  const heroLogoSrc = HERO_LOGO_URL;
   const heroTagline = "Meetings. Sponsor. Support. In your pocket.";
 
   return (

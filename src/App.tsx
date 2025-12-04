@@ -16,8 +16,9 @@ import { FindTreatment } from './components/FindTreatment';
 import { SignUp } from './components/SignUp';
 import { SignIn } from './components/SignIn';
 import { About } from './components/About';
-import heroLogo from './assets/penda-lane-logo-2025.svg';
 import { createDefaultState, fetchState, PersistedState, saveState } from './services/stateService';
+
+const HERO_LOGO_URL = 'https://drive.google.com/uc?export=view&id=1tCy-EvkV-8FLqdNMUv1joH3yD-b9HABc';
 
 const getOrCreateClientId = () => {
   const existing = document.cookie
@@ -383,7 +384,7 @@ const App: React.FC = () => {
             <main className="flex-1 p-4 md:p-8 overflow-y-auto space-y-6">
               <div className="bg-white border border-penda-border rounded-soft shadow-sm p-6 text-center space-y-3">
                 <div className="flex flex-col items-center space-y-2">
-                  <img src={heroLogo} alt="Penda Lane Behavioral Health logo" className="w-16 h-16 object-contain" />
+                  <img src={HERO_LOGO_URL} alt="Penda Lane Behavioral Health logo" className="w-16 h-16 object-contain" />
                   <div className="space-y-1">
                     <h1 className="text-2xl md:text-3xl font-extrabold text-penda-purple">
                       {headerTitle}
