@@ -35,7 +35,7 @@ export const Badges: React.FC<BadgesProps> = ({ badges, streak }) => {
         ) : (
             <div className="text-center py-6">
                 <p className="text-penda-text">No streak yet.</p>
-                <p className="text-sm text-penda-light mt-1">Start by checking in from the Meeting Finder tab.</p>
+                <p className="text-sm text-penda-light mt-1">Start by checking in from the Find A Meeting or Meeting Log tabs.</p>
             </div>
         )}
       </div>
