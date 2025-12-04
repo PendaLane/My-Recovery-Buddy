@@ -290,7 +290,7 @@ const App: React.FC = () => {
             stats={{ streakCount, journalCount: journals.length, meetingCount: meetingLogs.length }}
             notificationsEnabled={notificationsEnabled}
             onToggleNotifications={setNotificationsEnabled}
-            onToggleAuth={handleSignInOut}
+            onToggleAuth={user.isLoggedIn ? handleSignOut : handleSignIn}
             onResetAccount={resetAccount}
           />
         );
@@ -340,7 +340,7 @@ const App: React.FC = () => {
             user={user}
             onNavigate={setCurrentView}
             onCreateAccount={handleCreateAccount}
-            onToggleAuth={handleSignInOut}
+            onToggleAuth={user.isLoggedIn ? handleSignOut : handleSignIn}
           />
         );
     }
