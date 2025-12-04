@@ -8,7 +8,7 @@ import {
   StepWork,
   Streak,
   UserProfile,
-  View
+  View,
 } from './types';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -19,26 +19,8 @@ import { StepWorkComponent } from './components/StepWork';
 import { Badges } from './components/Badges';
 import { Readings } from './components/Readings';
 import { PhoneBook } from './components/PhoneBook';
-
-const loadFromStorage = <T,>(key: string, fallback: T): T => {
-  if (typeof localStorage === 'undefined') return fallback;
-  try {
-    const stored = localStorage.getItem(key);
-    return stored ? (JSON.parse(stored) as T) : fallback;
-  } catch (err) {
-    console.warn(`Failed to read ${key} from storage`, err);
-    return fallback;
-  }
-};
-
-const persistToStorage = <T,>(key: string, value: T) => {
-  if (typeof localStorage === 'undefined') return;
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (err) {
-    console.warn(`Failed to save ${key} to storage`, err);
-  }
-};
+import Logo from './assets/penda-logo.svg';
+import { loadState, recordSessionAnalytics, saveState, RemoteFlags } from './services/cloudStore';
 
 const defaultUser: UserProfile = {
   id: 'guest',
@@ -55,49 +37,105 @@ const sampleBadges: Badge[] = [
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
-  const [user] = useState<UserProfile>(defaultUser);
-  const [sobrietyDate, setSobrietyDate] = useState<string | null>(() => loadFromStorage('sobrietyDate', null));
-  const [journals, setJournals] = useState<JournalEntry[]>(() =>
-    loadFromStorage<JournalEntry[]>('journalEntries', [])
-  );
-  const [meetingLogs, setMeetingLogs] = useState<MeetingLog[]>(() =>
-    loadFromStorage<MeetingLog[]>('meetingLogs', [])
-  );
-  const [contacts, setContacts] = useState<Contact[]>(() => loadFromStorage<Contact[]>('contacts', []));
-  const [streak, setStreak] = useState<Streak>(() =>
-    loadFromStorage<Streak>('streak', { current: 0, longest: 0, lastCheckInDate: null })
-  );
-  const [stepWorkList, setStepWorkList] = useState<StepWork[]>(() =>
-    loadFromStorage<StepWork[]>('stepWork', [])
-  );
+  const [user, setUser] = useState<UserProfile>(defaultUser);
+  const [sobrietyDate, setSobrietyDate] = useState<string | null>(null);
+  const [journals, setJournals] = useState<JournalEntry[]>([]);
+  const [meetingLogs, setMeetingLogs] = useState<MeetingLog[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [streak, setStreak] = useState<Streak>({ current: 0, longest: 0, lastCheckInDate: null });
+  const [stepWorkList, setStepWorkList] = useState<StepWork[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [flags, setFlags] = useState<RemoteFlags>({});
+  const [sessionId] = useState(() => {
+    if (typeof localStorage === 'undefined') return defaultUser.id;
+    const existing = localStorage.getItem('sessionId');
+    if (existing) return existing;
+    const nextId = crypto.randomUUID();
+    localStorage.setItem('sessionId', nextId);
+    return nextId;
+  });
+  const [sessionStartedAt, setSessionStartedAt] = useState<string | null>(null);
 
   useEffect(() => {
-    persistToStorage('sobrietyDate', sobrietyDate);
-  }, [sobrietyDate]);
+    const hydrate = async () => {
+      const remote = await loadState(sessionId);
+      if (remote.flags) setFlags(remote.flags);
+      if (remote.state) {
+        setUser(remote.state.user || defaultUser);
+        setSobrietyDate(remote.state.sobrietyDate ?? null);
+        setJournals(remote.state.journals ?? []);
+        setMeetingLogs(remote.state.meetingLogs ?? []);
+        setContacts(remote.state.contacts ?? []);
+        setStreak(remote.state.streak ?? { current: 0, longest: 0, lastCheckInDate: null });
+        setStepWorkList(remote.state.stepWorkList ?? []);
+        setSessionStartedAt(remote.state.sessionStartedAt ?? null);
+      }
+      setHydrated(true);
+    };
+    hydrate();
+  }, [sessionId]);
 
   useEffect(() => {
-    persistToStorage('journalEntries', journals);
-  }, [journals]);
-
-  useEffect(() => {
-    persistToStorage('meetingLogs', meetingLogs);
-  }, [meetingLogs]);
-
-  useEffect(() => {
-    persistToStorage('contacts', contacts);
-  }, [contacts]);
-
-  useEffect(() => {
-    persistToStorage('streak', streak);
-  }, [streak]);
-
-  useEffect(() => {
-    persistToStorage('stepWork', stepWorkList);
-  }, [stepWorkList]);
+    if (!hydrated) return;
+    saveState(sessionId, {
+      user,
+      sobrietyDate,
+      journals,
+      meetingLogs,
+      contacts,
+      streak,
+      stepWorkList,
+      sessionStartedAt,
+    });
+  }, [hydrated, user, sobrietyDate, journals, meetingLogs, contacts, streak, stepWorkList, sessionId, sessionStartedAt]);
 
   const addJournalEntry = (entry: JournalEntry) => {
     setJournals((prev) => [...prev, entry]);
   };
+
+  const handleSignIn = (displayName?: string) => {
+    const now = new Date().toISOString();
+    setUser((prev) => ({
+      ...prev,
+      id: prev.id === defaultUser.id ? sessionId : prev.id,
+      displayName: displayName || prev.displayName,
+      isLoggedIn: true,
+    }));
+    setSessionStartedAt(now);
+  };
+
+  const handleSignOut = () => {
+    if (user.isLoggedIn && sessionStartedAt) {
+      const endedAt = new Date().toISOString();
+      recordSessionAnalytics({
+        sessionId,
+        userId: user.id,
+        startedAt: sessionStartedAt,
+        endedAt,
+        durationMs: new Date(endedAt).getTime() - new Date(sessionStartedAt).getTime(),
+      });
+    }
+    setUser((prev) => ({ ...prev, isLoggedIn: false }));
+    setSessionStartedAt(null);
+  };
+
+  useEffect(() => {
+    const handleUnload = () => {
+      if (user.isLoggedIn && sessionStartedAt) {
+        const endedAt = new Date().toISOString();
+        recordSessionAnalytics({
+          sessionId,
+          userId: user.id,
+          startedAt: sessionStartedAt,
+          endedAt,
+          durationMs: new Date(endedAt).getTime() - new Date(sessionStartedAt).getTime(),
+        });
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [sessionStartedAt, sessionId, user]);
 
   const saveStepWork = (work: StepWork) => {
     setStepWorkList((prev) => [...prev, work]);
@@ -220,8 +258,11 @@ const App: React.FC = () => {
     }
   };
 
+  const headerTitle = currentView === View.DASHBOARD ? 'Welcome to My Recovery Buddy' : 'My Recovery Buddy';
+  const headerSubtitle = 'Meetings. Sponsor. Support. In your pocket.';
+  const maintenanceMode = flags.maintenanceMode ?? false;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-penda-bg via-penda-tan to-white text-penda-text">
     <div className="min-h-screen bg-penda-bg text-penda-text">
       <div className="flex flex-col md:flex-row min-h-screen">
         <Sidebar
@@ -229,9 +270,45 @@ const App: React.FC = () => {
           setView={setCurrentView}
           isMobile={false}
           isLoggedIn={user.isLoggedIn}
+          onSignOut={handleSignOut}
           shareApp={shareApp}
         />
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">{renderView()}</main>
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+          <div className="max-w-5xl mx-auto space-y-6">
+            {maintenanceMode && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm px-4 py-3 rounded-soft shadow-sm">
+                Live sync is in maintenance. You can keep working and your updates will save when connectivity returns.
+              </div>
+            )}
+            <div className="bg-white border border-penda-border rounded-soft p-6 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <img src={Logo} alt="Penda Lane" className="w-12 h-12 rounded-xl border border-penda-border object-contain" />
+                <div>
+                  <h1 className="text-xl font-extrabold text-penda-purple leading-tight">{headerTitle}</h1>
+                  <p className="text-sm text-penda-light">{headerSubtitle}</p>
+                </div>
+              </div>
+              {!user.isLoggedIn && (
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <button
+                    onClick={() => handleSignIn('Member')}
+                    className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-light transition-colors"
+                  >
+                    Create Account
+                  </button>
+                  <button
+                    onClick={() => handleSignIn()}
+                    className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-bg"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {renderView()}
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -20,15 +20,14 @@ interface SidebarProps {
   setView: (view: View) => void;
   isMobile: boolean;
   isLoggedIn: boolean;
+  onSignOut: () => void;
   shareApp: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile, isLoggedIn, shareApp }) => {
-  const wpBaseUrl = 'https://pendalane.com';
-
+export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile, isLoggedIn, shareApp, onSignOut }) => {
   const menuItems = [
     { id: View.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
-    { id: View.MEETINGS, label: 'Meeting Finder', icon: MapPin },
+    { id: View.MEETINGS, label: 'Find A Meeting', icon: MapPin },
     { id: View.AI_COACH, label: 'AI Companion', icon: BotMessageSquare },
     { id: View.JOURNAL, label: 'Journal', icon: BookHeart },
     { id: View.STEPWORK, label: 'My Stepwork', icon: FileText },
@@ -52,22 +51,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
           <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
           <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
           <p className="text-[11px] text-penda-light">Compassionate support for every step.</p>
-          <div className="w-24 h-24 rounded-full bg-white border-2 border-penda-purple shadow-lg flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-penda-light/50 via-penda-tan to-white" />
-            <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-penda-purple to-penda-light text-white flex items-center justify-center text-2xl font-extrabold tracking-tight shadow-inner">
-              PL
-            </div>
-          </div>
-          <div className="text-[11px] uppercase tracking-[0.35em] text-penda-purple mt-1">Penda Lane</div>
-          <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
-          <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
-          <p className="text-[11px] text-penda-light">Compassionate support for every step.</p>
-        <div className="mb-8 px-2 flex flex-col items-center text-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-penda-purple to-penda-light text-white flex items-center justify-center text-2xl font-bold mb-3 shadow-inner">
-              RB
-            </div>
-            <h1 className="font-bold text-penda-purple text-lg leading-tight">Recovery Buddy</h1>
-            <p className="text-xs text-penda-light mt-1">Your companion for daily recovery habits.</p>
         </div>
       )}
       
@@ -123,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
 
         {isLoggedIn && !isMobile && (
           <button
-            onClick={() => setView(View.DASHBOARD)}
+            onClick={() => onSignOut()}
             className="flex items-center gap-3 px-4 py-3 rounded-firm mb-2 transition-all font-medium text-sm text-penda-light hover:text-penda-purple hover:bg-white w-full text-left"
           >
             <LogOut size={20} />
