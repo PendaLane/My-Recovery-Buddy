@@ -65,7 +65,7 @@ export const AICoach: React.FC = () => {
         </div>
         <div>
             <h2 className="font-bold text-penda-purple">My AI Companion</h2>
-            <p className="text-xs text-penda-light">Private, one-on-one support. Be kind to yourself and protect your privacy.</p>
+            <p className="text-xs text-penda-light">Have a private chat with your own personal AI companion.</p>
         </div>
       </div>
 

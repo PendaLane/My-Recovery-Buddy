@@ -1,83 +1,39 @@
 import React, { useState } from 'react';
-import { MapPin, Send, Sparkles, Wand2 } from 'lucide-react';
-
-const quickIdeas = [
-  'Find the closest beginner-friendly AA meeting',
-  'Locate tonight’s NA speaker meeting near me',
-  'Show CA meetings within 10 miles this weekend',
-  'Find LGBTQ+ friendly recovery meetings nearby',
-  'SMART Recovery meetings near me',
-];
+import { MapPin, Send } from 'lucide-react';
 
 const directories = [
-  { href: 'https://aa.org', label: 'AA.org (find local meetings)' },
-  { href: 'https://www.smartrecovery.org/local/', label: 'SMART Recovery (meeting search)' },
-  { href: 'https://na.org/meetingsearch/', label: 'NA.org (meeting search)' },
-  { href: 'https://ca.org/meetings/', label: 'CA.org (meeting list)' },
+  { href: 'https://aa.org', label: 'Alcoholics Anonymous (AA)' },
+  { href: 'https://na.org/meetingsearch/', label: 'Narcotics Anonymous (NA)' },
+  { href: 'https://ca.org/meetings/', label: 'Cocaine Anonymous (CA)' },
+  { href: 'https://www.smartrecovery.org/local/', label: 'SMART Recovery' },
+  { href: 'https://recoverydharma.org/meetings', label: 'Recovery Dharma' },
 ];
 
 export const MeetingFinder: React.FC = () => {
   const [location, setLocation] = useState('');
-  const [prompt, setPrompt] = useState('');
-  const [locating, setLocating] = useState(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
-  const searchMeetings = (type: string) => {
+  const launchSearch = (term: string) => {
     const loc = (location || 'near me').trim();
-    const q = encodeURIComponent(`${type} meeting ${loc}`);
-
+    const search = encodeURIComponent(`${term} meetings near ${loc}`);
     try {
-      window.open('https://www.google.com/maps/search/' + q, '_blank');
+      window.open(`https://www.google.com/maps/search/${search}`, '_blank');
     } catch (err) {
-      console.error('Unable to open search window', err);
-      alert('Unable to open the search window. Please allow pop-ups or try again.');
+      console.error('Unable to open the search window', err);
+      alert('Please allow pop-ups to search for meetings.');
     }
   };
 
-  const useMyLocation = () => {
-    if (!navigator?.geolocation) {
-      setLocationError('Location services are not available in this browser.');
-      return;
-    }
-
-    setLocationError(null);
-    setLocating(true);
-    setLocation('Locating...');
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        const coordsLabel = `${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`;
-        setLocation(coordsLabel);
-        setLocating(false);
-      },
-      () => {
-        setLocation('');
-        setLocating(false);
-        setLocationError('Unable to fetch your location. Please enter a city or ZIP instead.');
-      }
-    );
-  };
-
-  const handlePromptSubmit = () => {
-    if (!prompt.trim()) return;
-    const loc = (location || 'near me').trim();
-    const query = encodeURIComponent(
-      `${prompt.trim()} recovery meeting options ${loc} with official listings, schedule, and address`
-    );
-    try {
-      window.open('https://www.google.com/search?q=' + query, '_blank');
-    } catch (err) {
-      console.error('Unable to open search window', err);
-      alert('Unable to open the search window. Please allow pop-ups or try again.');
-    }
+  const handleCustomSearch = () => {
+    if (!query.trim()) return;
+    launchSearch(query.trim());
   };
 
   return (
     <div className="space-y-6">
       <header>
         <h2 className="text-2xl font-bold text-penda-purple">Find A Meeting</h2>
-        <p className="text-sm text-penda-light">
-          Search trusted directories or launch a location-aware Google search with clear wording.
-        </p>
+        <p className="text-sm text-penda-light">Jump straight to official directories or search Google with your location.</p>
       </header>
 
       <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border space-y-4">
@@ -92,109 +48,77 @@ export const MeetingFinder: React.FC = () => {
             />
             <MapPin className="absolute left-3 top-2.5 text-penda-border" size={16} />
           </div>
-          <p className="text-[11px] text-penda-light mt-1">Allow location access for the quickest nearby results.</p>
+          <p className="text-[11px] text-penda-light mt-1">Add your city or ZIP for the most accurate nearby results.</p>
         </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {directories.map((site) => (
+            <a
+              key={site.href}
+              href={site.href}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm bg-penda-bg text-penda-purple px-3 py-3 rounded-firm border border-penda-border hover:bg-white text-center w-full"
+            >
+              {site.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border space-y-3">
+        <h3 className="text-sm font-bold text-penda-purple">Search Google for nearby meetings</h3>
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={useMyLocation}
-            className="text-xs bg-penda-bg text-penda-purple border border-penda-border px-3 py-2 rounded-firm hover:bg-white transition-colors"
-            disabled={locating}
-          >
-            {locating ? 'Locating…' : 'Use my location'}
-          </button>
-          <button
-            onClick={() => searchMeetings('AA')}
+            onClick={() => launchSearch('AA')}
             className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm hover:bg-penda-light transition-colors"
           >
             AA near me
           </button>
           <button
-            onClick={() => searchMeetings('NA')}
+            onClick={() => launchSearch('NA')}
             className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors"
           >
             NA near me
           </button>
           <button
-            onClick={() => searchMeetings('CA')}
+            onClick={() => launchSearch('CA')}
             className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors"
           >
             CA near me
           </button>
           <button
-            onClick={() => searchMeetings('Smart Recovery')}
+            onClick={() => launchSearch('SMART Recovery')}
             className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors"
           >
-            Smart Recovery near me
+            SMART Recovery near me
+          </button>
+          <button
+            onClick={() => launchSearch('Recovery Dharma')}
+            className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg transition-colors"
+          >
+            Recovery Dharma near me
           </button>
         </div>
 
-        {locationError && <p className="text-xs text-red-600">{locationError}</p>}
-
-        <div>
-          <h3 className="text-penda-purple font-bold text-sm mb-2">Official Meeting Sites</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {directories.map((site) => (
-              <a
-                key={site.href}
-                href={site.href}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs bg-penda-bg text-penda-purple px-3 py-3 rounded-firm border border-penda-border hover:bg-white text-center w-full"
-              >
-                {site.label}
-              </a>
-            ))}
-          </div>
+        <div className="relative mt-3">
+          <textarea
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Example: women’s-only AA meeting tonight with wheelchair access"
+            className="w-full border border-penda-border rounded-firm p-3 pr-12 text-sm focus:outline-none focus:border-penda-purple focus:ring-1 focus:ring-penda-purple min-h-[96px]"
+          />
+          <button
+            onClick={handleCustomSearch}
+            disabled={!query.trim()}
+            className="absolute right-3 bottom-3 bg-penda-purple text-white rounded-firm p-2 hover:bg-penda-light disabled:opacity-50"
+          >
+            <Send size={16} />
+          </button>
         </div>
-      </div>
-
-      <div className="bg-white p-5 rounded-soft shadow-sm border border-penda-border space-y-4">
-        <div className="flex items-center gap-2">
-          <Sparkles className="text-penda-purple" size={18} />
-          <h3 className="font-bold text-penda-purple text-sm">Search with clear wording</h3>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <div className="relative">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Example: Find a women’s-only AA meeting tonight in my city with wheelchair access"
-              className="w-full border border-penda-border rounded-firm p-3 pr-12 text-sm focus:outline-none focus:border-penda-purple focus:ring-1 focus:ring-penda-purple min-h-[96px]"
-            />
-            <button
-              onClick={handlePromptSubmit}
-              disabled={!prompt.trim()}
-              className="absolute right-3 bottom-3 bg-penda-purple text-white rounded-firm p-2 hover:bg-penda-light disabled:opacity-50"
-            >
-              <Send size={16} />
-            </button>
-          </div>
-
-          <p className="text-xs text-penda-light">
-            We’ll open a Google search using your wording plus your location to surface accurate meeting options.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {quickIdeas.map((idea) => (
-            <button
-              key={idea}
-              onClick={() => setPrompt(idea)}
-              className="flex items-center gap-2 text-left bg-penda-bg border border-penda-border px-3 py-2 rounded-firm text-sm hover:bg-white transition-colors"
-            >
-              <Wand2 size={16} className="text-penda-purple" />
-              <span>{idea}</span>
-            </button>
-          ))}
-        </div>
-
-        {aiResponse && (
-          <div className="bg-penda-bg p-3 rounded-firm border border-penda-border text-sm text-penda-text whitespace-pre-wrap">
-            {aiResponse}
-          </div>
-        )}
+        <p className="text-xs text-penda-light">
+          We’ll open a Google search with your wording plus your location so you see the closest options.
+        </p>
       </div>
     </div>
   );

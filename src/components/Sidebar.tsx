@@ -34,16 +34,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
     { id: View.JOURNAL, label: 'Journal', icon: BookHeart },
     { id: View.CONTACTS, label: 'Phone Book', icon: Phone },
     { id: View.READINGS, label: 'Daily Readings', icon: BookOpen },
-    { id: View.AI_COACH, label: 'AI Companion', icon: BotMessageSquare },
     { id: View.BADGES, label: 'Badges & Streaks', icon: Award },
     { id: View.FIND_TREATMENT, label: 'Find Treatment', icon: FileText },
+    { id: View.AI_COACH, label: 'My AI Companion', icon: BotMessageSquare },
   ];
 
   const baseClass = isMobile
-    ? "fixed bottom-0 left-0 w-full bg-white border-t border-penda-border flex overflow-x-auto p-2 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] gap-2"
+    ? "sticky top-0 left-0 w-full bg-white border-b border-penda-border flex overflow-x-auto p-2 z-40 shadow-sm gap-2"
     : "w-72 bg-penda-bg border-r border-penda-border/80 flex flex-col p-5 h-full shadow-lg shrink-0 overflow-y-auto";
 
-  const heroLogoSrc = "https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png";
+  const heroLogoSrc = "http://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png";
   const heroTagline = "Meetings. Sponsor. Support. In your pocket.";
 
   return (

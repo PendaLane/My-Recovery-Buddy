@@ -72,6 +72,7 @@ class AppErrorBoundary extends Component<{ children: React.ReactNode }, { hasErr
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
+  const [isMobile, setIsMobile] = useState<boolean>(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const [clientId] = useState<string>(() => getOrCreateClientId());
   const [isHydrating, setIsHydrating] = useState<boolean>(true);
   const [user, setUser] = useState<UserProfile>(() => createDefaultState(getOrCreateClientId()).user);
@@ -204,6 +205,13 @@ const App: React.FC = () => {
   const handleProfileUpdate = (profile: UserProfile) => {
     setUser(profile);
   };
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSignInOut = () => {
     setUser((prev) => ({
@@ -366,7 +374,7 @@ const App: React.FC = () => {
           <Sidebar
             currentView={currentView}
             setView={setCurrentView}
-            isMobile={false}
+            isMobile={isMobile}
             isLoggedIn={user.isLoggedIn}
             shareApp={shareApp}
           />
@@ -374,7 +382,6 @@ const App: React.FC = () => {
             <main className="flex-1 p-4 md:p-8 overflow-y-auto space-y-6">
               <div className="bg-white border border-penda-border rounded-soft shadow-sm p-6 text-center space-y-3">
                 <div className="space-y-1">
-                  <p className="text-xs uppercase tracking-[0.25em] text-penda-light">My Recovery Buddy</p>
                   <h1 className="text-2xl md:text-3xl font-extrabold text-penda-purple">
                     {headerTitle}
                   </h1>
