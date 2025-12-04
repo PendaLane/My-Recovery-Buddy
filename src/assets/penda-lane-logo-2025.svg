@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-labelledby="title desc">
+  <title id="title">Penda Lane Behavioral Health</title>
+  <desc id="desc">Logo with a stylized road inside a sunset circle and the text Penda Lane Behavioral Health</desc>
+  <defs>
+    <linearGradient id="road" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#f6e9f2" stop-opacity="0.95" />
+    </linearGradient>
+  </defs>
+  <circle cx="250" cy="230" r="190" fill="#92005b" />
+  <path d="M 60 320 C 160 300 210 260 250 120 C 260 160 260 210 230 250 C 200 290 150 320 40 340 Z" fill="#ffffff" opacity="0.9" />
+  <path d="M 250 120 C 275 190 350 240 460 280 L 470 305 C 330 280 250 240 210 200 Z" fill="#ffffff" />
+  <path d="M 40 340 C 180 320 270 310 420 360 L 380 375 C 260 340 170 340 90 360 Z" fill="#ffffff" opacity="0.9" />
+  <rect x="60" y="395" width="380" height="6" fill="#92005b" rx="3" />
+  <text x="250" y="445" text-anchor="middle" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="48" font-weight="700" fill="#92005b">PENDA LANE</text>
+  <text x="250" y="480" text-anchor="middle" font-family="'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="600" fill="#92005b">Behavioral Health</text>
+</svg>

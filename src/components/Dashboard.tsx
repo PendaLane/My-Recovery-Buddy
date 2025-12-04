@@ -10,9 +10,11 @@ interface DashboardProps {
   streakCount: number;
   user: UserProfile | null;
   onNavigate?: (view: View) => void;
+  onCreateAccount?: () => void;
+  onToggleAuth?: () => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user, onNavigate }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user, onNavigate, onCreateAccount, onToggleAuth }) => {
   const [daysSober, setDaysSober] = useState(0);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
           <div className="z-10 relative">
             <h3 className="text-lg font-bold mb-3">Begin Your Journey</h3>
             <div className="bg-white/10 p-4 rounded-firm border border-white/20 mb-4 backdrop-blur-sm">
-              <p className="text-sm mb-3 font-medium">Save your sober date locally and jump into the tools that help you most.</p>
+              <p className="text-sm mb-3 font-medium">Save your sober date and jump into the tools that help you most—everything stays synced to My Recovery Buddy.</p>
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => onNavigate?.(View.MEETINGS)}
@@ -76,7 +78,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyD
               </div>
             </div>
 
-            <label className="block text-xs uppercase tracking-wide opacity-80 mb-1">Set Clean/Sober Date (Local Only)</label>
+              <label className="block text-xs uppercase tracking-wide opacity-80 mb-1">Set Clean/Sober Date (synced to My Recovery Buddy)</label>
             <input
               type="date" 
               className="w-full p-2 rounded-firm text-penda-purple font-bold border border-penda-border"

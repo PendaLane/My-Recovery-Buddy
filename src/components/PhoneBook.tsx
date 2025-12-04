@@ -6,6 +6,7 @@ interface PhoneBookProps {
   contacts: Contact[];
   onSave: (contact: Omit<Contact, 'id'>) => void;
   onDelete: (id: string) => void;
+  emergencyContact?: { name: string; phone: string; relation?: string };
 }
 
 const roleOptions: Contact['role'][] = ['Sponsor', 'Peer', 'Therapist', 'Family', 'Friend'];
@@ -32,7 +33,7 @@ const fellowshipOptions: Contact['fellowship'][] = [
   'Other',
 ];
 
-export const PhoneBook: React.FC<PhoneBookProps> = ({ contacts, onSave, onDelete }) => {
+export const PhoneBook: React.FC<PhoneBookProps> = ({ contacts, onSave, onDelete, emergencyContact }) => {
   const [form, setForm] = useState<Omit<Contact, 'id'>>({
     name: '',
     role: 'Sponsor',
@@ -57,7 +58,7 @@ export const PhoneBook: React.FC<PhoneBookProps> = ({ contacts, onSave, onDelete
       <header>
         <h2 className="text-2xl font-bold text-penda-purple">Trusted Phone Book</h2>
         <p className="text-sm text-penda-light">
-          Keep your sponsors, peers, and providers handy. Saved locally on this device only.
+          Keep your sponsor, peers, and providers handy. Contacts are saved securely to My Recovery Buddy.
         </p>
       </header>
 
@@ -131,6 +132,25 @@ export const PhoneBook: React.FC<PhoneBookProps> = ({ contacts, onSave, onDelete
           <Shield className="text-penda-purple" size={20} />
           <h3 className="font-bold text-penda-purple">Contacts</h3>
         </div>
+        {emergencyContact && (
+          <div className="p-3 border border-penda-border rounded-firm bg-penda-tan flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
+            <div>
+              <div className="font-semibold text-penda-text">{emergencyContact.name}</div>
+              <div className="text-xs text-penda-light">Emergency Contact{emergencyContact.relation ? ` • ${emergencyContact.relation}` : ''}</div>
+              <a className="text-sm text-penda-purple underline" href={`tel:${emergencyContact.phone}`}>
+                {emergencyContact.phone}
+              </a>
+            </div>
+            <div className="flex gap-2">
+              <a
+                href={`tel:${emergencyContact.phone}`}
+                className="flex items-center gap-2 bg-penda-purple text-white px-3 py-2 rounded-firm text-sm hover:bg-penda-light"
+              >
+                <Phone size={16} /> Call
+              </a>
+            </div>
+          </div>
+        )}
         {contacts.length === 0 ? (
           <p className="text-sm text-penda-light italic">No contacts yet. Add your sponsor, therapist, or trusted peers.</p>
         ) : (
