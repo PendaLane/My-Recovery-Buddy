@@ -1,15 +1,17 @@
-import React, { Component, ErrorInfo, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './index.css';
 import {
   Badge,
   Contact,
   JournalEntry,
-  MeetingLog,
+  MeetingLog as MeetingLogType, // Fixed: Renamed to avoid conflict
   StepWork,
   Streak,
   UserProfile,
   View,
 } from './types';
+
+// --- COMPONENTS ---
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { Journal } from './components/Journal';
@@ -20,6 +22,12 @@ import { StepWorkComponent } from './components/StepWork';
 import { Badges } from './components/Badges';
 import { Readings } from './components/Readings';
 import { PhoneBook } from './components/PhoneBook';
+import { FindTreatment } from './components/FindTreatment'; // Added missing import
+import { MyAccount } from './components/MyAccount'; // Added missing import
+import { SignIn } from './components/SignIn'; // Added missing import
+import { SignUp } from './components/SignUp'; // Added missing import
+import { About } from './components/About'; // Added missing import
+
 import { loadState, recordSessionAnalytics, saveState, RemoteFlags } from './services/cloudStore';
 
 const defaultUser: UserProfile = {
@@ -40,12 +48,15 @@ const App: React.FC = () => {
   const [user, setUser] = useState<UserProfile>(defaultUser);
   const [sobrietyDate, setSobrietyDate] = useState<string | null>(null);
   const [journals, setJournals] = useState<JournalEntry[]>([]);
-  const [meetingLogs, setMeetingLogs] = useState<MeetingLog[]>([]);
+  // Fixed: Use MeetingLogType for the data, not the Component
+  const [meetingLogs, setMeetingLogs] = useState<MeetingLogType[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [streak, setStreak] = useState<Streak>({ current: 0, longest: 0, lastCheckInDate: null });
   const [stepWorkList, setStepWorkList] = useState<StepWork[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [flags, setFlags] = useState<RemoteFlags>({});
+  
+  // Session ID Logic
   const [sessionId] = useState(() => {
     if (typeof localStorage === 'undefined') return defaultUser.id;
     const existing = localStorage.getItem('sessionId');
@@ -55,7 +66,10 @@ const App: React.FC = () => {
     return nextId;
   });
   const [sessionStartedAt, setSessionStartedAt] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false); // Fixed: Added missing state
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false); // Fixed: Added missing state
 
+  // --- EFFECTS ---
   useEffect(() => {
     const hydrate = async () => {
       const remote = await loadState(sessionId);
@@ -89,36 +103,6 @@ const App: React.FC = () => {
     });
   }, [hydrated, user, sobrietyDate, journals, meetingLogs, contacts, streak, stepWorkList, sessionId, sessionStartedAt]);
 
-  const addJournalEntry = (entry: JournalEntry) => {
-    setJournals((prev) => [...prev, entry]);
-  };
-
-  const handleSignIn = (displayName?: string) => {
-    const now = new Date().toISOString();
-    setUser((prev) => ({
-      ...prev,
-      id: prev.id === defaultUser.id ? sessionId : prev.id,
-      displayName: displayName || prev.displayName,
-      isLoggedIn: true,
-    }));
-    setSessionStartedAt(now);
-  };
-
-  const handleSignOut = () => {
-    if (user.isLoggedIn && sessionStartedAt) {
-      const endedAt = new Date().toISOString();
-      recordSessionAnalytics({
-        sessionId,
-        userId: user.id,
-        startedAt: sessionStartedAt,
-        endedAt,
-        durationMs: new Date(endedAt).getTime() - new Date(sessionStartedAt).getTime(),
-      });
-    }
-    setUser((prev) => ({ ...prev, isLoggedIn: false }));
-    setSessionStartedAt(null);
-  };
-
   useEffect(() => {
     const handleUnload = () => {
       if (user.isLoggedIn && sessionStartedAt) {
@@ -136,6 +120,50 @@ const App: React.FC = () => {
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
   }, [sessionStartedAt, sessionId, user]);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // --- HANDLERS ---
+  const addJournalEntry = (entry: JournalEntry) => {
+    setJournals((prev) => [...prev, entry]);
+  };
+
+  const handleSignIn = (displayName?: string) => {
+    const now = new Date().toISOString();
+    if (displayName) {
+        setUser((prev) => ({
+        ...prev,
+        id: prev.id === defaultUser.id ? sessionId : prev.id,
+        displayName: displayName,
+        isLoggedIn: true,
+        }));
+        setCurrentView(View.DASHBOARD);
+    } else {
+        setCurrentView(View.SIGN_IN);
+    }
+    setSessionStartedAt(now);
+  };
+
+  const handleSignOut = () => {
+    if (user.isLoggedIn && sessionStartedAt) {
+      const endedAt = new Date().toISOString();
+      recordSessionAnalytics({
+        sessionId,
+        userId: user.id,
+        startedAt: sessionStartedAt,
+        endedAt,
+        durationMs: new Date(endedAt).getTime() - new Date(sessionStartedAt).getTime(),
+      });
+    }
+    setUser((prev) => ({ ...prev, isLoggedIn: false }));
+    setSessionStartedAt(null);
+    setCurrentView(View.DASHBOARD);
+  };
 
   const saveStepWork = (work: StepWork) => {
     setStepWorkList((prev) => [...prev, work]);
@@ -212,13 +240,6 @@ const App: React.FC = () => {
     setUser(profile);
   };
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const handleCreateAccount = () => {
     setCurrentView(View.SIGN_UP);
   };
@@ -227,7 +248,7 @@ const App: React.FC = () => {
     setUser((prev) => ({
       ...prev,
       ...profile,
-      id: clientId,
+      id: sessionId,
       isLoggedIn: true,
     }));
     setCurrentView(View.MY_ACCOUNT);
@@ -237,22 +258,21 @@ const App: React.FC = () => {
     setUser((prev) => ({
       ...prev,
       ...profile,
-      id: clientId,
+      id: sessionId,
       isLoggedIn: true,
     }));
     setCurrentView(View.MY_ACCOUNT);
   };
 
   const resetAccount = () => {
-    const defaults = createDefaultState(clientId);
-    setUser(defaults.user);
-    setSobrietyDate(defaults.sobrietyDate);
-    setJournals(defaults.journals);
-    setMeetingLogs(defaults.meetingLogs);
-    setContacts(defaults.contacts);
-    setStreak(defaults.streak);
-    setStepWorkList(defaults.stepWorkList);
-    setNotificationsEnabled(defaults.notificationsEnabled);
+    setUser(defaultUser);
+    setSobrietyDate(null);
+    setJournals([]);
+    setMeetingLogs([]);
+    setContacts([]);
+    setStreak({ current: 0, longest: 0, lastCheckInDate: null });
+    setStepWorkList([]);
+    setNotificationsEnabled(false);
   };
 
   const renderView = () => {
@@ -318,14 +338,6 @@ const App: React.FC = () => {
                   Chat Online
                 </a>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <a href="tel:18006624357" className="flex items-center justify-center gap-2 bg-penda-purple text-white px-3 py-3 rounded-firm font-semibold shadow-md hover:bg-penda-light">
-                  SAMHSA Helpline 1-800-662-4357
-                </a>
-                <a href="tel:911" className="flex items-center justify-center gap-2 bg-penda-tan text-penda-purple px-3 py-3 rounded-firm font-semibold shadow-sm border border-penda-border">
-                  Emergency Services (911)
-                </a>
-              </div>
             </div>
           </div>
         );
@@ -356,7 +368,7 @@ const App: React.FC = () => {
         <Sidebar
           currentView={currentView}
           setView={setCurrentView}
-          isMobile={false}
+          isMobile={isMobile}
           isLoggedIn={user.isLoggedIn}
           onSignOut={handleSignOut}
           shareApp={shareApp}
@@ -370,10 +382,9 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Header card with Logo */}
+            {/* Header card - LOGO REMOVED */}
             <div className="bg-white border border-penda-border rounded-soft p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
-               
                 <div>
                   <h1 className="text-xl font-extrabold text-penda-purple leading-tight">
                     {headerTitle}
