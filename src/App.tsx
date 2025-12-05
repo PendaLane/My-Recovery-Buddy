@@ -351,6 +351,12 @@ const App: React.FC = () => {
   const maintenanceMode = flags.maintenanceMode ?? false;
 
   return (
+      const headerTitle =
+    currentView === View.DASHBOARD ? 'Welcome to My Recovery Buddy' : 'My Recovery Buddy';
+  const headerSubtitle = 'Meetings. Sponsor. Support. In your pocket.';
+  const maintenanceMode = flags.maintenanceMode ?? false;
+
+  return (
     <div className="min-h-screen bg-penda-bg text-penda-text">
       <div className="flex flex-col md:flex-row min-h-screen">
         <Sidebar
@@ -365,17 +371,27 @@ const App: React.FC = () => {
           <div className="max-w-5xl mx-auto space-y-6">
             {maintenanceMode && (
               <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm px-4 py-3 rounded-soft shadow-sm">
-                Live sync is in maintenance. You can keep working and your updates will save when connectivity returns.
+                Live sync is in maintenance. You can keep working and your updates will save when
+                connectivity returns.
               </div>
             )}
+
+            {/* Header card with Logo */}
             <div className="bg-white border border-penda-border rounded-soft p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
-                <img src={Logo} alt="Penda Lane" className="w-12 h-12 rounded-xl border border-penda-border object-contain" />
+                <img
+                  src={Logo}
+                  alt="Penda Lane"
+                  className="w-12 h-12 rounded-xl border border-penda-border object-contain"
+                />
                 <div>
-                  <h1 className="text-xl font-extrabold text-penda-purple leading-tight">{headerTitle}</h1>
+                  <h1 className="text-xl font-extrabold text-penda-purple leading-tight">
+                    {headerTitle}
+                  </h1>
                   <p className="text-sm text-penda-light">{headerSubtitle}</p>
                 </div>
               </div>
+
               {!user.isLoggedIn && (
                 <div className="flex flex-wrap gap-3 pt-2">
                   <button
