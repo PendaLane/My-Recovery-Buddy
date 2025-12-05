@@ -20,7 +20,6 @@ import { StepWorkComponent } from './components/StepWork';
 import { Badges } from './components/Badges';
 import { Readings } from './components/Readings';
 import { PhoneBook } from './components/PhoneBook';
-import Logo from './assets/penda-logo.svg';
 import { loadState, recordSessionAnalytics, saveState, RemoteFlags } from './services/cloudStore';
 
 const defaultUser: UserProfile = {
