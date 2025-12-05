@@ -3,7 +3,6 @@ import { ChatMessage } from "../types";
 
 const ENV_API_KEY = import.meta.env.VITE_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
 
-// Fix 1: Use the correct class name (GoogleGenerativeAI)
 const genAI = ENV_API_KEY ? new GoogleGenerativeAI(ENV_API_KEY) : null;
 
 export const getApiKeyStatus = () => ({
@@ -25,20 +24,16 @@ export const getAICoachResponse = async (history: ChatMessage[], newMessage: str
   if (!genAI) return "AI is temporarily unavailable. Please try again later.";
 
   try {
-    // Fix 2: Get the model first, using a valid model name (1.5-flash)
-    // We pass the system instruction here
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
       systemInstruction: SYSTEM_INSTRUCTION_COACH
     });
     
-    // Fix 3: Format history correctly for the public SDK
     const recentHistory = history.slice(-10).map(msg => ({
-      role: msg.role === 'admin' ? 'model' : msg.role, // Ensure roles match API expectations
+      role: msg.role === 'admin' ? 'model' : msg.role,
       parts: [{ text: msg.text }]
     }));
 
-    // Fix 4: Use startChat instead of client.chats.create
     const chat = model.startChat({
       history: recentHistory,
       generationConfig: {
@@ -60,7 +55,6 @@ export const analyzeJournalEntry = async (entryText: string, mood: string): Prom
   if (!genAI) return "AI reflections are temporarily unavailable.";
 
   try {
-    // Fix 5: Get model for single generation
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
@@ -72,7 +66,6 @@ export const analyzeJournalEntry = async (entryText: string, mood: string): Prom
       End with a short encouraging affirmation.
     `;
 
-    // Fix 6: Use generateContent
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();
