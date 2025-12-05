@@ -346,12 +346,7 @@ const App: React.FC = () => {
     }
   };
 
-  const headerTitle = currentView === View.DASHBOARD ? 'Welcome to My Recovery Buddy' : 'My Recovery Buddy';
-  const headerSubtitle = 'Meetings. Sponsor. Support. In your pocket.';
-  const maintenanceMode = flags.maintenanceMode ?? false;
-
-  return (
-      const headerTitle =
+   const headerTitle =
     currentView === View.DASHBOARD ? 'Welcome to My Recovery Buddy' : 'My Recovery Buddy';
   const headerSubtitle = 'Meetings. Sponsor. Support. In your pocket.';
   const maintenanceMode = flags.maintenanceMode ?? false;
