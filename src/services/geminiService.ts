@@ -30,7 +30,7 @@ export const getAICoachResponse = async (history: ChatMessage[], newMessage: str
     });
     
     const recentHistory = history.slice(-10).map(msg => ({
-      role: msg.role === 'admin' ? 'model' : msg.role,
+      role: msg.role,
       parts: [{ text: msg.text }]
     }));
 
