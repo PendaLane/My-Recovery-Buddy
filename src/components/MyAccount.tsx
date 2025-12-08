@@ -194,7 +194,7 @@ export const MyAccount: React.FC<MyAccountProps> = ({
                 value={formState.emergencyContact?.name || ''}
                 onChange={(e) => setFormState((prev) => ({
                   ...prev,
-                  emergencyContact: { ...(prev.emergencyContact || { relation: '' }), name: e.target.value },
+                  emergencyContact: { ...(prev.emergencyContact || { relation: '', phone: '' }), name: e.target.value },
                 }))}
                 className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple"
               />
