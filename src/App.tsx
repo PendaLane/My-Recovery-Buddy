@@ -58,10 +58,16 @@ const App: React.FC = () => {
   
   // Session ID Logic
   const [sessionId] = useState(() => {
-    if (typeof localStorage === 'undefined') return defaultUser.id;
+    // Guard against environments without crypto/localStorage so the app still renders
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return defaultUser.id;
+
     const existing = localStorage.getItem('sessionId');
     if (existing) return existing;
-    const nextId = crypto.randomUUID();
+
+    const nextId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+
     localStorage.setItem('sessionId', nextId);
     return nextId;
   });
