@@ -17,6 +17,11 @@ interface PersistedState {
 const STATE_TABLE = 'user_state';
 const CACHE_TTL_SECONDS = 1800;
 
+// Simple in-memory fallback so local development works without Postgres/KV.
+// This is not meant for production but keeps the app running when env vars
+// are missing (e.g., in local Vite preview).
+const memoryState = new Map<string, PersistedState>();
+
 const hasRequiredEnv = () =>
   Boolean(
     process.env.POSTGRES_URL ||
@@ -55,10 +60,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'sessionId required' });
   }
 
+  // When database env vars are missing, fall back to in-memory storage so the
+  // app still runs locally. This bypasses Postgres/KV entirely.
   if (!hasRequiredEnv()) {
-    return res
-      .status(503)
-      .json({ error: 'Database unavailable: POSTGRES_URL not configured' });
+    if (req.method === 'GET') {
+      const flags = await readEdgeFlags();
+      return res.status(200).json({ state: memoryState.get(sessionId) ?? null, flags });
+    }
+
+    if (req.method === 'POST') {
+      const state = (req.body?.state as PersistedState) || null;
+      if (!state) {
+        return res.status(400).json({ error: 'state payload missing' });
+      }
+      memoryState.set(sessionId, state);
+      return res.status(200).json({ ok: true, stored: 'memory' });
+    }
+
+    res.setHeader('Allow', 'GET,POST');
+    return res.status(405).end('Method not allowed');
   }
 
   await ensureTables();

@@ -13,6 +13,10 @@ My Recovery Buddy is a Vite + React app that keeps recovery tools, meeting resou
 3. Run the dev server: `npm run dev`
 4. Build: `npm run build`
 
+If you don't have the Vercel Postgres/KV/Blob/Edge Config env vars configured locally,
+the serverless API routes fall back to in-memory storage and simple placeholders so the
+app can still load in development. Data will reset on restart.
+
 ## Deployment
 Deploy on Vercel with the Postgres, KV, Blob, and Edge Config resources attached. The API routes under `/api` depend on those bindings; no extra configuration is needed once the services are connected in the dashboard.
 
