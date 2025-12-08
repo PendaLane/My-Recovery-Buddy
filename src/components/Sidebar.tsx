@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
       {!isMobile && (
         <div className="mb-8 px-2 flex flex-col items-center text-center gap-2">
           <div className="w-24 h-24 rounded-[28px] bg-white border-2 border-penda-border shadow-lg flex items-center justify-center overflow-hidden">
-            <img src={Logo} alt="Penda Lane" className="w-full h-full object-contain" />
+            <img src={heroLogoSrc} alt="Penda Lane" className="w-full h-full object-contain" />
           </div>
           <div className="text-[11px] uppercase tracking-[0.35em] text-penda-purple mt-2">Penda Lane</div>
           <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
