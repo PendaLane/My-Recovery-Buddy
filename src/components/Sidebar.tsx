@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
         <div className="mb-8 px-2 flex flex-col items-center text-center gap-2">
           <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
           <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
-          <p className="text-[11px] text-penda-light">Compassionate support for every step.</p>
+          <p className="text-[11px] text-penda-light">Meetings. Sponsor. Support. In your pocket.</p>
         </div>
       )}
       

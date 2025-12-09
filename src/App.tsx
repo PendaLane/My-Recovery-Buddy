@@ -139,20 +139,8 @@ const App: React.FC = () => {
     setJournals((prev) => [...prev, entry]);
   };
 
-  const handleSignIn = (displayName?: string) => {
-    const now = new Date().toISOString();
-    if (displayName) {
-        setUser((prev) => ({
-        ...prev,
-        id: prev.id === defaultUser.id ? sessionId : prev.id,
-        displayName: displayName,
-        isLoggedIn: true,
-        }));
-        setCurrentView(View.DASHBOARD);
-    } else {
-        setCurrentView(View.SIGN_IN);
-    }
-    setSessionStartedAt(now);
+  const handleSignIn = () => {
+    setCurrentView(View.SIGN_IN);
   };
 
   const handleSignOut = () => {
@@ -251,22 +239,26 @@ const App: React.FC = () => {
   };
 
   const handleSignUpSubmit = (profile: Partial<UserProfile>) => {
+    const now = new Date().toISOString();
     setUser((prev) => ({
       ...prev,
       ...profile,
       id: sessionId,
       isLoggedIn: true,
     }));
+    setSessionStartedAt(now);
     setCurrentView(View.MY_ACCOUNT);
   };
 
   const handleSignInSubmit = (profile: Partial<UserProfile>) => {
+    const now = new Date().toISOString();
     setUser((prev) => ({
       ...prev,
       ...profile,
       id: sessionId,
       isLoggedIn: true,
     }));
+    setSessionStartedAt(now);
     setCurrentView(View.MY_ACCOUNT);
   };
 
@@ -279,6 +271,7 @@ const App: React.FC = () => {
     setStreak({ current: 0, longest: 0, lastCheckInDate: null });
     setStepWorkList([]);
     setNotificationsEnabled(false);
+    setSessionStartedAt(null);
   };
 
   const renderView = () => {
@@ -400,13 +393,13 @@ const App: React.FC = () => {
               {!user.isLoggedIn && (
                 <div className="flex flex-wrap gap-3 pt-2 justify-center">
                   <button
-                    onClick={() => handleSignIn('Member')}
+                    onClick={handleCreateAccount}
                     className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-light transition-colors"
                   >
                     Create Account
                   </button>
                   <button
-                    onClick={() => handleSignIn()}
+                    onClick={handleSignIn}
                     className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-bg"
                   >
                     Sign In
