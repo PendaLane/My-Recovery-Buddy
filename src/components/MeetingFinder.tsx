@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, CheckCircle, ExternalLink, Send } from 'lucide-react';
+import { MapPin, ExternalLink, Send } from 'lucide-react';
 
 export const MeetingFinder: React.FC = () => {
   const [location, setLocation] = useState('');
@@ -12,15 +12,6 @@ export const MeetingFinder: React.FC = () => {
     // Opens a google search with the custom query + location
     window.open(`https://www.google.com/search?q=${encodeURIComponent(query + ' ' + loc)}`, '_blank');
   };
-
-  const onCheckIn = () => {
-    alert("Check-in recorded! (This is a placeholder)");
-  };
-
-  const onCheckOut = () => {
-    alert("Check-out recorded!");
-  };
-  // ------------------------------------------------
 
   const meetingPathways = [
     {
@@ -165,23 +156,10 @@ export const MeetingFinder: React.FC = () => {
         </div>
       </div>
 
-      {/* Meeting Log */}
-      <div className="bg-white p-5 rounded-firm shadow-sm border border-penda-border">
-        <h2 className="text-lg font-bold text-penda-purple mb-2">Meeting Log</h2>
-        <div className="bg-penda-bg p-3 rounded-firm border border-dashed border-penda-light mb-4 text-xs text-penda-text">
-            Your meeting history is synced securely so you can access it from any session.
-        </div>
-
-        <div className="flex gap-2 mb-4">
-            <button onClick={onCheckIn} className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm flex items-center gap-2 hover:bg-penda-light">
-                <CheckCircle size={16} /> Check In
-            </button>
-            <button onClick={onCheckOut} className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm hover:bg-penda-bg">
-                Check Out
-            </button>
-        </div>
-
-        <div className="relative mt-3">
+      <div className="bg-white p-5 rounded-firm shadow-sm border border-penda-border space-y-3">
+        <h2 className="text-lg font-bold text-penda-purple">Custom Search</h2>
+        <p className="text-sm text-penda-light">Use your own words to find the exact format, accessibility, or vibe you want.</p>
+        <div className="relative">
           <textarea
             value={query}
             onChange={(e) => setQuery(e.target.value)}

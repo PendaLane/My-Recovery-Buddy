@@ -10,6 +10,14 @@ body {
   background-color: #f3ecde;
   color: #2d1b27;
   font-family: 'Inter', system-ui, sans-serif;
+  text-align: center;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-align: center;
 }
 
 /* Custom Scrollbar */

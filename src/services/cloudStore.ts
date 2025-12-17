@@ -25,9 +25,11 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
+const apiBase = import.meta.env.VITE_BACKEND_BASE_URL || '/api';
+
 export const loadState = async (sessionId: string): Promise<RemoteStateResponse> => {
   try {
-    const res = await fetch(`/api/state?sessionId=${encodeURIComponent(sessionId)}`);
+    const res = await fetch(`${apiBase}/state?sessionId=${encodeURIComponent(sessionId)}`);
     if (!res.ok) return { state: null, flags: {} };
     const data = (await res.json()) as RemoteStateResponse;
     return {
@@ -43,7 +45,7 @@ export const loadState = async (sessionId: string): Promise<RemoteStateResponse>
 const maybeUploadAvatar = async (user: UserProfile): Promise<UserProfile> => {
   if (!user.avatar || !user.avatar.startsWith('data:image')) return user;
   try {
-    const res = await fetch('/api/upload-avatar', {
+    const res = await fetch(`${apiBase}/upload-avatar`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ dataUrl: user.avatar }),
@@ -62,7 +64,7 @@ const maybeUploadAvatar = async (user: UserProfile): Promise<UserProfile> => {
 export const saveState = async (sessionId: string, state: PersistedState) => {
   try {
     const safeUser = await maybeUploadAvatar(state.user);
-    const res = await fetch('/api/state', {
+    const res = await fetch(`${apiBase}/state`, {
       method: 'POST',
       headers,
       body: JSON.stringify({ sessionId, state: { ...state, user: safeUser } }),
@@ -83,7 +85,7 @@ export const recordSessionAnalytics = async (payload: {
   durationMs: number;
 }) => {
   try {
-    const res = await fetch('/api/session-analytics', {
+    const res = await fetch(`${apiBase}/session-analytics`, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
