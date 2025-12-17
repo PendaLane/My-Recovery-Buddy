@@ -10,11 +10,9 @@ interface DashboardProps {
   streakCount: number;
   user: UserProfile | null;
   onNavigate?: (view: View) => void;
-  onCreateAccount?: () => void;
-  onToggleAuth?: () => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user, onNavigate, onCreateAccount, onToggleAuth }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ sobrietyDate, setSobrietyDate, journals, streakCount, user, onNavigate }) => {
   const [daysSober, setDaysSober] = useState(0);
 
   useEffect(() => {

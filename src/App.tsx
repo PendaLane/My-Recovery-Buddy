@@ -15,7 +15,6 @@ import {
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { Journal } from './components/Journal';
-import { AICoach } from './components/AICoach';
 import { MeetingFinder } from './components/MeetingFinder';
 import { MeetingLog } from './components/MeetingLog';
 import { StepWorkComponent } from './components/StepWork';
@@ -24,9 +23,8 @@ import { Readings } from './components/Readings';
 import { PhoneBook } from './components/PhoneBook';
 import { FindTreatment } from './components/FindTreatment'; // Added missing import
 import { MyAccount } from './components/MyAccount'; // Added missing import
-import { SignIn } from './components/SignIn'; // Added missing import
 import { SignUp } from './components/SignUp'; // Added missing import
-import { About } from './components/About'; // Added missing import
+import { PublicLanding, PublicShellWrapper } from './components/PublicLanding';
 
 import { loadState, recordSessionAnalytics, saveState, RemoteFlags } from './services/cloudStore';
 
@@ -34,7 +32,7 @@ const defaultUser: UserProfile = {
   id: 'guest',
   displayName: 'Guest',
   email: 'guest@example.com',
-  avatar: 'https://i.pravatar.cc/100?img=65',
+  avatar: '',
   isLoggedIn: false,
 };
 
@@ -139,10 +137,6 @@ const App: React.FC = () => {
     setJournals((prev) => [...prev, entry]);
   };
 
-  const handleSignIn = () => {
-    setCurrentView(View.SIGN_IN);
-  };
-
   const handleSignOut = () => {
     if (user.isLoggedIn && sessionStartedAt) {
       const endedAt = new Date().toISOString();
@@ -194,19 +188,19 @@ const App: React.FC = () => {
     });
   };
 
-  const handleCheckIn = (location: string) => {
+  const handleCheckIn = (location: string, photoDataUrl?: string) => {
     const now = new Date();
     setMeetingLogs((prev) => [
-      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-In', location },
+      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-In', location, photoDataUrl },
       ...prev,
     ]);
     updateStreakOnCheckIn(now);
   };
 
-  const handleCheckOut = (location: string) => {
+  const handleCheckOut = (location: string, photoDataUrl?: string) => {
     const now = new Date();
     setMeetingLogs((prev) => [
-      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-Out', location },
+      { id: Date.now().toString(), timestamp: now.toISOString(), type: 'Check-Out', location, photoDataUrl },
       ...prev,
     ]);
   };
@@ -234,10 +228,6 @@ const App: React.FC = () => {
     setUser(profile);
   };
 
-  const handleCreateAccount = () => {
-    setCurrentView(View.SIGN_UP);
-  };
-
   const handleSignUpSubmit = (profile: Partial<UserProfile>) => {
     const now = new Date().toISOString();
     setUser((prev) => ({
@@ -247,7 +237,7 @@ const App: React.FC = () => {
       isLoggedIn: true,
     }));
     setSessionStartedAt(now);
-    setCurrentView(View.MY_ACCOUNT);
+    setCurrentView(View.DASHBOARD);
   };
 
   const handleSignInSubmit = (profile: Partial<UserProfile>) => {
@@ -259,7 +249,7 @@ const App: React.FC = () => {
       isLoggedIn: true,
     }));
     setSessionStartedAt(now);
-    setCurrentView(View.MY_ACCOUNT);
+    setCurrentView(View.DASHBOARD);
   };
 
   const resetAccount = () => {
@@ -278,8 +268,6 @@ const App: React.FC = () => {
     switch (currentView) {
       case View.JOURNAL:
         return <Journal entries={journals} addEntry={addJournalEntry} user={user} />;
-      case View.AI_COACH:
-        return <AICoach />;
       case View.MEETINGS:
         return <MeetingFinder />;
       case View.MEETING_LOG:
@@ -308,16 +296,10 @@ const App: React.FC = () => {
             stats={{ streakCount, journalCount: journals.length, meetingCount: meetingLogs.length }}
             notificationsEnabled={notificationsEnabled}
             onToggleNotifications={setNotificationsEnabled}
-            onToggleAuth={user.isLoggedIn ? handleSignOut : handleSignIn}
+            onToggleAuth={handleSignOut}
             onResetAccount={resetAccount}
           />
         );
-      case View.SIGN_UP:
-        return <SignUp user={user} onSubmit={handleSignUpSubmit} />;
-      case View.SIGN_IN:
-        return <SignIn user={user} onSubmit={handleSignInSubmit} />;
-      case View.ABOUT:
-        return <About />;
       case View.HELP:
         return (
           <div className="space-y-4">
@@ -349,17 +331,45 @@ const App: React.FC = () => {
             streakCount={streakCount}
             user={user}
             onNavigate={setCurrentView}
-            onCreateAccount={handleCreateAccount}
-            onToggleAuth={user.isLoggedIn ? handleSignOut : handleSignIn}
           />
         );
     }
   };
 
-   const headerTitle =
+  const headerTitle =
     currentView === View.DASHBOARD ? 'Welcome to My Recovery Buddy' : 'My Recovery Buddy';
-  const headerSubtitle = 'Meetings. Sponsor. Support. In your pocket.';
+  const headerSubtitle = 'Meetings. Sponsors. Support. In your pocket.';
   const maintenanceMode = flags.maintenanceMode ?? false;
+
+  if (!user.isLoggedIn) {
+    if (currentView === View.SIGN_UP) {
+      return (
+        <PublicShellWrapper>
+          <div className="flex flex-col items-center gap-6 w-full">
+            <div className="bg-white border border-penda-border rounded-soft shadow-sm w-full max-w-3xl p-6">
+              <SignUp user={user} onSubmit={handleSignUpSubmit} />
+            </div>
+            <div className="text-sm text-penda-text/80">
+              Already have an account?{' '}
+              <button
+                className="text-penda-purple font-semibold hover:text-penda-light"
+                onClick={() => setCurrentView(View.DASHBOARD)}
+              >
+                Go back to log in
+              </button>
+            </div>
+          </div>
+        </PublicShellWrapper>
+      );
+    }
+
+    return (
+      <PublicLanding
+        onLogin={handleSignInSubmit}
+        onStartSignUp={() => setCurrentView(View.SIGN_UP)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-penda-bg text-penda-text">
@@ -372,8 +382,8 @@ const App: React.FC = () => {
           onSignOut={handleSignOut}
           shareApp={shareApp}
         />
-        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          <div className="max-w-5xl mx-auto space-y-6">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto text-center">
+          <div className="max-w-3xl mx-auto space-y-6">
             {maintenanceMode && (
               <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm px-4 py-3 rounded-soft shadow-sm">
                 Live sync is in maintenance. You can keep working and your updates will save when
@@ -381,31 +391,19 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Header card - LOGO REMOVED */}
             <div className="bg-white border border-penda-border rounded-soft p-6 shadow-sm text-center">
-              <div className="flex flex-col items-center gap-2 mb-3">
+              <div className="flex flex-col items-center gap-3 mb-3">
+                <img
+                  src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png"
+                  alt="Penda Lane Behavioral Health Logo"
+                  className="w-32 h-32 rounded-full object-cover bg-transparent"
+                />
                 <h1 className="text-xl font-extrabold text-penda-purple leading-tight">
                   {headerTitle}
                 </h1>
+                <p className="text-xs text-penda-text/80 -mt-2">By Penda Lane Behavioral Health</p>
                 <p className="text-sm text-penda-light">{headerSubtitle}</p>
               </div>
-
-              {!user.isLoggedIn && (
-                <div className="flex flex-wrap gap-3 pt-2 justify-center">
-                  <button
-                    onClick={handleCreateAccount}
-                    className="bg-penda-purple text-white px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-light transition-colors"
-                  >
-                    Create Account
-                  </button>
-                  <button
-                    onClick={handleSignIn}
-                    className="bg-white border border-penda-purple text-penda-purple px-4 py-2 rounded-firm text-sm font-semibold hover:bg-penda-bg"
-                  >
-                    Sign In
-                  </button>
-                </div>
-              )}
             </div>
 
             {renderView()}

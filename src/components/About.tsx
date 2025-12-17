@@ -45,19 +45,17 @@ export const About: React.FC = () => {
               <li>Log attendance for proof and personal records</li>
               <li>Stay close to your sponsor tools and contacts</li>
               <li>Work the steps with guided worksheets</li>
-              <li>Journal privately with instant reflections</li>
+              <li>Journal privately with guided prompts</li>
               <li>Keep a quick-access phone book for support</li>
             </ul>
             <ul className="list-disc pl-5 space-y-1">
               <li>Read daily inspiration</li>
-              <li>Chat with your AI companion*</li>
               <li>Earn badges and track streaks</li>
               <li>Explore treatment options in your state</li>
               <li>Use crisis resources the moment you need them</li>
               <li>Manage your profile and synced account settings</li>
             </ul>
           </div>
-          <p className="text-[12px] text-penda-text/70">* Supportive conversation only; it isn’t a substitute for therapy or emergency care.</p>
         </section>
 
         <section className="space-y-2">

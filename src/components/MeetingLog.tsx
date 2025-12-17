@@ -1,15 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import { MeetingLog as MeetingLogEntry } from '../types';
-import { CheckCircle, Clock, Download, MapPin, Printer } from 'lucide-react';
+import { Camera, CheckCircle, Clock, Download, MapPin, Printer } from 'lucide-react';
 
 interface MeetingLogProps {
   logs: MeetingLogEntry[];
-  onCheckIn: (location: string) => void;
-  onCheckOut: (location: string) => void;
+  onCheckIn: (location: string, photoDataUrl?: string) => void;
+  onCheckOut: (location: string, photoDataUrl?: string) => void;
 }
 
 export const MeetingLog: React.FC<MeetingLogProps> = ({ logs, onCheckIn, onCheckOut }) => {
   const [location, setLocation] = useState('');
+  const [attachPhoto, setAttachPhoto] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
 
   const orderedLogs = useMemo(() => logs, [logs]);
 
@@ -38,12 +40,36 @@ export const MeetingLog: React.FC<MeetingLogProps> = ({ logs, onCheckIn, onCheck
 
   const safeLocation = location.trim() || 'Location not recorded';
 
+  const getPhotoDataUrl = async () => {
+    if (!attachPhoto || !photoFile) return undefined;
+    return new Promise<string | undefined>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : undefined);
+      reader.onerror = () => resolve(undefined);
+      reader.readAsDataURL(photoFile);
+    });
+  };
+
+  const handleCheck = async (type: 'in' | 'out') => {
+    const photoDataUrl = await getPhotoDataUrl();
+    if (type === 'in') {
+      onCheckIn(safeLocation, photoDataUrl);
+    } else {
+      onCheckOut(safeLocation, photoDataUrl);
+    }
+    setPhotoFile(null);
+    setAttachPhoto(false);
+  };
+
   return (
     <div className="space-y-6">
       <header className="space-y-1">
         <h2 className="text-2xl font-bold text-penda-purple">Meeting Log</h2>
         <p className="text-sm text-penda-light">
-          Track every meeting you attend. Checking in and out stamps the date, time, and location so you can export and print a clean attendance record when you need proof.
+          Keep a verified record of every meeting you attend. Checking in when you arrive and checking out when you leave stamps the date, time, and place so you can see it on a map and in your history later.
+        </p>
+        <p className="text-xs text-penda-text/80">
+          This replaces the old paper log you had to carry around for signatures—now you can tap to record attendance and optionally attach a quick photo for proof if you want it.
         </p>
       </header>
 
@@ -61,15 +87,39 @@ export const MeetingLog: React.FC<MeetingLogProps> = ({ logs, onCheckIn, onCheck
               <MapPin className="absolute left-3 top-3 text-penda-border" size={16} />
             </div>
           </label>
+          <div className="flex flex-col gap-2">
+            <label className="flex items-center justify-center gap-2 text-xs text-penda-text">
+              <input
+                type="checkbox"
+                checked={attachPhoto}
+                onChange={(e) => setAttachPhoto(e.target.checked)}
+                className="w-4 h-4 accent-penda-purple"
+              />
+              Add an optional proof photo
+            </label>
+            {attachPhoto && (
+              <label className="flex items-center justify-center gap-2 text-xs text-penda-text bg-penda-bg border border-penda-border rounded-firm py-2 px-3 cursor-pointer hover:border-penda-purple">
+                <Camera size={16} className="text-penda-purple" />
+                <span>{photoFile ? photoFile.name : 'Take or upload a photo (optional)'}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                />
+              </label>
+            )}
+          </div>
           <div className="flex gap-2">
             <button
-              onClick={() => onCheckIn(safeLocation)}
+              onClick={() => handleCheck('in')}
               className="flex-1 bg-penda-purple text-white px-4 py-3 rounded-firm text-sm font-semibold shadow hover:bg-penda-light transition-colors flex items-center justify-center gap-2"
             >
               <CheckCircle size={18} /> Check In
             </button>
             <button
-              onClick={() => onCheckOut(safeLocation)}
+              onClick={() => handleCheck('out')}
               className="flex-1 bg-white border border-penda-purple text-penda-purple px-4 py-3 rounded-firm text-sm font-semibold hover:bg-penda-bg transition-colors"
             >
               Check Out
@@ -107,6 +157,11 @@ export const MeetingLog: React.FC<MeetingLogProps> = ({ logs, onCheckIn, onCheck
                 <div>
                   <div className="font-semibold text-penda-text">{log.type}</div>
                   <div className="text-xs text-penda-light">{log.location || 'Location not recorded'}</div>
+                  {log.photoDataUrl && (
+                    <div className="mt-2 flex justify-center">
+                      <img src={log.photoDataUrl} alt={`${log.type} proof`} className="w-24 h-24 object-cover rounded-firm border border-penda-border" />
+                    </div>
+                  )}
                 </div>
                 <div className="text-xs text-penda-text">{new Date(log.timestamp).toLocaleString()}</div>
               </div>
