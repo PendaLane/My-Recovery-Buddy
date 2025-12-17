@@ -381,9 +381,13 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {/* Header card - LOGO REMOVED */}
             <div className="bg-white border border-penda-border rounded-soft p-6 shadow-sm text-center">
-              <div className="flex flex-col items-center gap-2 mb-3">
+              <div className="flex flex-col items-center gap-3 mb-3">
+                <img
+                  src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png"
+                  alt="Penda Lane Behavioral Health Logo"
+                  className="w-32 h-auto"
+                />
                 <h1 className="text-xl font-extrabold text-penda-purple leading-tight">
                   {headerTitle}
                 </h1>
