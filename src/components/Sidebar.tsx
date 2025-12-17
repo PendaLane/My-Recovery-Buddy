@@ -47,6 +47,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, isMobile
     <nav className={baseClass}>
       {!isMobile && (
         <div className="mb-8 px-2 flex flex-col items-center text-center gap-2">
+          <img
+            src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png"
+            alt="Penda Lane Behavioral Health Logo"
+            className="w-32 h-auto"
+          />
           <h1 className="font-extrabold text-penda-purple text-xl leading-tight">My Recovery Buddy</h1>
           <p className="text-xs text-penda-text/80">By Penda Lane Behavioral Health</p>
           <p className="text-[11px] text-penda-light">Meetings. Sponsor. Support. In your pocket.</p>
