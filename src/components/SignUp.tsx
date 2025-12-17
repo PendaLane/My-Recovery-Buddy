@@ -4,7 +4,7 @@ import { UserProfile } from '../types';
 
 interface SignUpProps {
   user: UserProfile;
-  onSubmit: (profile: Partial<UserProfile>) => void;
+  onSubmit: (profile: Partial<UserProfile>, password: string) => Promise<void> | void;
 }
 
 export const SignUp: React.FC<SignUpProps> = ({ user, onSubmit }) => {
@@ -12,30 +12,42 @@ export const SignUp: React.FC<SignUpProps> = ({ user, onSubmit }) => {
     displayName: user.displayName || '',
     email: user.email || '',
     state: user.state || '',
+    password: '',
     emergencyName: user.emergencyContact?.name || '',
     emergencyPhone: user.emergencyContact?.phone || '',
     emergencyRelation: user.emergencyContact?.relation || '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      displayName: formState.displayName,
-      email: formState.email,
-      state: formState.state,
-      emergencyContact: {
-        name: formState.emergencyName,
-        phone: formState.emergencyPhone,
-        relation: formState.emergencyRelation,
-      },
-      isLoggedIn: true,
-      joinedAt: user.joinedAt || new Date().toISOString(),
-    });
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit(
+        {
+          displayName: formState.displayName,
+          email: formState.email,
+          state: formState.state,
+          emergencyContact: {
+            name: formState.emergencyName,
+            phone: formState.emergencyPhone,
+            relation: formState.emergencyRelation,
+          },
+          isLoggedIn: true,
+          joinedAt: user.joinedAt || new Date().toISOString(),
+        },
+        formState.password,
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center gap-3">
+      <header className="flex flex-col items-center gap-2 text-center">
         <UserPlus className="text-penda-purple" size={24} />
         <div>
           <h2 className="text-2xl font-bold text-penda-purple">Create Your Account</h2>
@@ -61,6 +73,18 @@ export const SignUp: React.FC<SignUpProps> = ({ user, onSubmit }) => {
               value={formState.email}
               onChange={(e) => setFormState((prev) => ({ ...prev, email: e.target.value }))}
               className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple"
+              required
+            />
+          </label>
+          <label className="block text-sm text-penda-text">
+            Password
+            <input
+              type="password"
+              value={formState.password}
+              onChange={(e) => setFormState((prev) => ({ ...prev, password: e.target.value }))}
+              className="w-full mt-1 p-3 rounded-firm border border-penda-border focus:border-penda-purple"
+              placeholder="Create a password"
+              minLength={8}
               required
             />
           </label>
@@ -116,10 +140,11 @@ export const SignUp: React.FC<SignUpProps> = ({ user, onSubmit }) => {
 
         <button
           type="submit"
-          className="w-full flex items-center justify-center gap-2 bg-penda-purple text-white font-semibold py-3 rounded-firm shadow-md hover:shadow-lg transition-all"
+          className="w-full flex items-center justify-center gap-2 bg-penda-purple text-white font-semibold py-3 rounded-firm shadow-md hover:shadow-lg transition-all disabled:opacity-70"
+          disabled={isSubmitting}
         >
           <ShieldCheck size={18} />
-          Create Account & Sign In
+          {isSubmitting ? 'Creating your membership...' : 'Create Account & Sign In'}
         </button>
       </form>
     </div>

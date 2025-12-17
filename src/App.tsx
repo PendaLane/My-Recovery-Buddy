@@ -27,6 +27,7 @@ import { SignUp } from './components/SignUp'; // Added missing import
 import { PublicLanding, PublicShellWrapper } from './components/PublicLanding';
 
 import { loadState, recordSessionAnalytics, saveState, RemoteFlags } from './services/cloudStore';
+import { registerMembership } from './services/wordpressMembership';
 
 const defaultUser: UserProfile = {
   id: 'guest',
@@ -228,8 +229,27 @@ const App: React.FC = () => {
     setUser(profile);
   };
 
-  const handleSignUpSubmit = (profile: Partial<UserProfile>) => {
+  const handleSignUpSubmit = async (profile: Partial<UserProfile>, password: string) => {
     const now = new Date().toISOString();
+
+    try {
+      await registerMembership({
+        displayName: profile.displayName ?? profile.email ?? 'Member',
+        email: profile.email ?? '',
+        password,
+        state: profile.state ?? '',
+        emergencyName: profile.emergencyContact?.name ?? '',
+        emergencyPhone: profile.emergencyContact?.phone ?? '',
+        emergencyRelation: profile.emergencyContact?.relation ?? '',
+      });
+    } catch (err) {
+      console.error('Membership registration failed', err);
+      alert(
+        'We could not create your WordPress membership automatically. Please try again or complete registration on pendalane.com.',
+      );
+      return;
+    }
+
     setUser((prev) => ({
       ...prev,
       ...profile,

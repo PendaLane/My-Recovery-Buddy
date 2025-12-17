@@ -31,6 +31,12 @@ add_action('rest_api_init', function () {
         'permission_callback' => 'penda_recovery_auth',
         'callback' => 'penda_recovery_session',
     ]);
+
+    register_rest_route('penda/v1', '/register-member', [
+        'methods'  => 'POST',
+        'permission_callback' => 'penda_recovery_auth',
+        'callback' => 'penda_recovery_register_member',
+    ]);
 });
 
 function penda_recovery_auth() {
@@ -61,6 +67,52 @@ function penda_recovery_session(WP_REST_Request $request) {
         update_option('penda_session_logs', $log, false);
     }
     return ['ok' => true];
+}
+
+function penda_recovery_register_member(WP_REST_Request $request) {
+    $body = json_decode($request->get_body(), true);
+    if (empty($body['email']) || empty($body['password']) || empty($body['displayName'])) {
+        return new WP_Error('missing_fields', 'displayName, email, and password are required', ['status' => 400]);
+    }
+
+    $email = sanitize_email($body['email']);
+    $password = $body['password'];
+    $displayName = sanitize_text_field($body['displayName']);
+    $state = sanitize_text_field($body['state'] ?? '');
+    $emergency = [
+        'name' => sanitize_text_field($body['emergencyName'] ?? ''),
+        'phone' => sanitize_text_field($body['emergencyPhone'] ?? ''),
+        'relation' => sanitize_text_field($body['emergencyRelation'] ?? ''),
+    ];
+    $levelId = intval($body['levelId'] ?? 1);
+
+    $user = get_user_by('email', $email);
+    if (!$user) {
+        $userId = wp_create_user($email, $password, $email);
+        if (is_wp_error($userId)) {
+            return $userId;
+        }
+        $user = get_user_by('id', $userId);
+    }
+
+    wp_update_user([
+        'ID' => $user->ID,
+        'display_name' => $displayName,
+        'nickname' => $displayName,
+    ]);
+
+    update_user_meta($user->ID, 'penda_state', $state);
+    update_user_meta($user->ID, 'penda_emergency', $emergency);
+
+    if (function_exists('pmpro_addMembershipLevel')) {
+        pmpro_addMembershipLevel($levelId, $user->ID);
+    }
+
+    return [
+        'userId' => $user->ID,
+        'email' => $email,
+        'level' => $levelId,
+    ];
 }
 ```
 
