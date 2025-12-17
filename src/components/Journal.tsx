@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { JournalEntry, UserProfile } from '../types';
-import { analyzeJournalEntry } from '../services/geminiService';
-import { Sparkles, Save, Book, Plus, Lock } from 'lucide-react';
+import { Save, Book, Plus, Lock } from 'lucide-react';
 
 interface JournalProps {
   entries: JournalEntry[];
@@ -13,25 +12,18 @@ export const Journal: React.FC<JournalProps> = ({ entries, addEntry, user }) => 
   const [view, setView] = useState<'list' | 'new'>('list');
   const [mood, setMood] = useState<JournalEntry['mood']>('Okay');
   const [text, setText] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-
   const handleSave = async () => {
     if (!text.trim()) return;
 
-    setIsAnalyzing(true);
-    const reflection = await analyzeJournalEntry(text, mood);
-    
     const newEntry: JournalEntry = {
       id: Date.now().toString(),
       date: new Date().toISOString(),
       mood,
       text,
-      aiReflection: reflection
     };
 
     addEntry(newEntry);
 
-    setIsAnalyzing(false);
     setText('');
     setMood('Okay');
     setView('list');
@@ -90,20 +82,13 @@ export const Journal: React.FC<JournalProps> = ({ entries, addEntry, user }) => 
           <div className="flex gap-3">
              <button
                onClick={handleSave}
-               disabled={isAnalyzing || !text.trim()}
+               disabled={!text.trim()}
                className="flex-1 bg-penda-purple text-white py-3 rounded-firm font-medium hover:bg-penda-light transition-colors flex items-center justify-center gap-2 disabled:opacity-70 border border-penda-purple"
              >
-                {isAnalyzing ? (
-                    <>
-                        <Sparkles className="animate-spin" size={18} />
-                        Thinking...
-                    </>
-                ) : (
-                    <>
-                        <Save size={18} />
-                        Save Entry
-                    </>
-                )}
+                <>
+                  <Save size={18} />
+                  Save Entry
+                </>
              </button>
              <button
                onClick={() => setView('list')}
@@ -119,8 +104,8 @@ export const Journal: React.FC<JournalProps> = ({ entries, addEntry, user }) => 
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
+      <div className="flex flex-col items-center gap-3 md:flex-row md:items-center md:justify-between text-center w-full">
+        <div className="w-full md:w-auto">
             <h2 className="text-2xl font-bold text-penda-purple">Journal</h2>
             <p className="text-penda-light text-sm">Log your thoughts and feelings.</p>
         </div>
@@ -155,15 +140,6 @@ export const Journal: React.FC<JournalProps> = ({ entries, addEntry, user }) => 
                     <p className="text-penda-text whitespace-pre-wrap mb-4 font-normal text-sm leading-relaxed">
                         {entry.text}
                     </p>
-                    {entry.aiReflection && (
-                        <div className="bg-penda-bg p-3 rounded-firm border border-dashed border-penda-light flex gap-3">
-                            <Sparkles className="text-penda-purple flex-shrink-0 mt-0.5" size={16} />
-                            <div>
-                                <h4 className="text-xs font-bold text-penda-purple uppercase tracking-wide mb-1">AI Reflection</h4>
-                                <p className="text-xs text-penda-text italic">{entry.aiReflection}</p>
-                            </div>
-                        </div>
-                    )}
                 </div>
             ))
         )}

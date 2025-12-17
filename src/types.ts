@@ -20,7 +20,6 @@ export interface JournalEntry {
   date: string; // ISO string
   mood: string;
   text: string;
-  aiReflection?: string;
   userId?: string;
 }
 
@@ -57,13 +56,6 @@ export interface MeetingLog {
   timestamp: string;
   location?: string;
   type: 'Check-In' | 'Check-Out';
-}
-
-export interface ChatMessage {
-  id: string;
-  role: 'user' | 'model';
-  text: string;
-  timestamp: number;
 }
 
 export interface StepWork {
@@ -112,7 +104,6 @@ export interface MembershipInfo {
 export enum View {
   DASHBOARD = 'DASHBOARD',
   JOURNAL = 'JOURNAL',
-  AI_COACH = 'AI_COACH',
   MEETINGS = 'MEETINGS',
   MEETING_LOG = 'MEETING_LOG',
   STEPWORK = 'STEPWORK',

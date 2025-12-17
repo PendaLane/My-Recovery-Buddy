@@ -15,7 +15,6 @@ import {
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
 import { Journal } from './components/Journal';
-import { AICoach } from './components/AICoach';
 import { MeetingFinder } from './components/MeetingFinder';
 import { MeetingLog } from './components/MeetingLog';
 import { StepWorkComponent } from './components/StepWork';
@@ -34,7 +33,7 @@ const defaultUser: UserProfile = {
   id: 'guest',
   displayName: 'Guest',
   email: 'guest@example.com',
-  avatar: 'https://i.pravatar.cc/100?img=65',
+  avatar: '',
   isLoggedIn: false,
 };
 
@@ -278,8 +277,6 @@ const App: React.FC = () => {
     switch (currentView) {
       case View.JOURNAL:
         return <Journal entries={journals} addEntry={addJournalEntry} user={user} />;
-      case View.AI_COACH:
-        return <AICoach />;
       case View.MEETINGS:
         return <MeetingFinder />;
       case View.MEETING_LOG:
@@ -386,7 +383,7 @@ const App: React.FC = () => {
                 <img
                   src="https://pendalane.com/wp-content/uploads/2024/04/cropped-Penda-Lane-Behavioral-Health-Logo.png"
                   alt="Penda Lane Behavioral Health Logo"
-                  className="w-32 h-auto"
+                  className="w-32 h-32 rounded-full object-cover bg-transparent"
                 />
                 <h1 className="text-xl font-extrabold text-penda-purple leading-tight">
                   {headerTitle}

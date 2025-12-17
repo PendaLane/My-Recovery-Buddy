@@ -61,9 +61,13 @@ export const MyAccount: React.FC<MyAccountProps> = ({
   return (
     <div className="space-y-6">
       <div className="bg-white border border-penda-border rounded-soft shadow-sm p-6">
-        <div className="flex items-center gap-4">
-          <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-penda-purple shadow-md">
-            <img src={formState.avatar} alt="Profile" className="w-full h-full object-cover" />
+        <div className="flex flex-col items-center gap-4 text-center md:flex-row md:items-center md:gap-6 md:text-left">
+          <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-penda-purple shadow-md flex items-center justify-center bg-penda-bg text-penda-purple font-bold text-xs leading-tight text-center px-2">
+            {formState.avatar ? (
+              <img src={formState.avatar} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span>We Do Recover</span>
+            )}
             <button
               onClick={() => fileInputRef.current?.click()}
               className="absolute bottom-1 right-1 bg-penda-purple text-white rounded-full p-2 shadow-lg"
@@ -80,10 +84,10 @@ export const MyAccount: React.FC<MyAccountProps> = ({
             />
           </div>
           <div>
-            <p className="text-sm uppercase tracking-[0.25em] text-penda-light">My Account</p>
+            <p className="text-sm uppercase tracking-[0.25em] text-penda-light text-center md:text-left">My Account</p>
             <h2 className="text-2xl font-bold text-penda-purple">{formState.displayName}</h2>
             <p className="text-sm text-penda-text/80">Member since {memberSince}</p>
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="flex flex-wrap gap-2 mt-3 justify-center md:justify-start">
               <button
                 onClick={onToggleAuth}
                 className="inline-flex items-center gap-2 bg-white text-penda-purple border border-penda-border px-3 py-2 rounded-firm text-sm font-semibold hover:bg-penda-bg"
