@@ -20,6 +20,13 @@ h4 {
   text-align: center;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  text-align: center;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
